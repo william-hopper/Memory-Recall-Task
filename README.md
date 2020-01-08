@@ -1,2 +1,2 @@
-# PhD
-Commit or Quit: A Computational Approach to Perseverance
+# Memory Recall Task
+First experiment 08/01/2020
