@@ -52,6 +52,25 @@ addpath(genpath(pwd));  % add all the sub functions
 
 cfg.path.stim                                  = 'Stimuli/'; % link to Stimuli folder
 cfg.path.instructions                          = ([cfg.path.stim,'Instructions/Image_instructions/']);
-cfg.path.training                              = '../../../../ownCloud/CONFPERF_EXP_02/raw/training/';  %'raw/training/';  % path to save main exp data
-cfg.path.main_exp                              = '../../../../ownCloud/CONFPERF_EXP_02/raw/main_exp/';  % 'raw/main_exp/';  % path to save main exp data
+cfg.path.training                              = 'C:/Users/william.hopper/ownCloud/PhD/Matlab/Memory-Recall-Task/raw';  %'raw/training/';  % path to save raw exp data
+cfg.path.main_exp                              = 'C:/Users/william.hopper/ownCloud/PhD/Matlab/Memory-Recall-Task/main_exp';  % 'raw/main_exp/';  % path to save main exp data
+
+create_missing_directories(cfg.path);
+
+
+%% Ask for subject id
+% =========================================================================
+
+cfg.subname         = input('Subject initials: ','s'); % ask for intials
+cfg.subid           = input('Subject number: ');  % ask for number
+
+% hostname and filename
+cfg.scriptname      = mfilename('fullpath');  % save the name of this script
+[~, cfg.hostname]   = system('hostname'); % get the name of the PC
+cfg.hostname        = deblank(cfg.hostname);  % remove wired characters
+
+cfg.start_time      = datestr(now, 30); % start time
+cfg.fname           = sprintf('%02i_%s_%s', cfg.subid, cfg.subname, cfg.start_time);
+
+
 
