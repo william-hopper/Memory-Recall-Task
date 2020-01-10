@@ -37,6 +37,7 @@ end
 
 cfg.exp.n_trials                   = 30;        % number of trials
 cfg.exp.baseline_reimbursement     = 15;        % how much money we promise as a baseline
+cfg.exp.nStim                      = 16;        % how many individual stimuli 
 
 cfg.exp.time.flip_speed            = 0.5;       % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
@@ -95,15 +96,27 @@ cfg.ptb.black = BlackIndex(cfg.ptb.screenNumber); % set up black
 [cfg.ptb.PTBwindow, cfg.ptb.PTBwindowRect] = PsychImaging('Openwindow', cfg.ptb.screenNumber, cfg.ptb.black);
 Screen('BlendFunction', cfg.ptb.PTBwindow, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA'); % Set the blend funciton for the screen
 
-[cfg.ptb.xCenter, cfg.ptb.yCenter] = RectCenter(cfg.ptb.PTBwindowRect); % Get the centre coordinate of the window
+[cfg.ptb.xCentre, cfg.ptb.yCentre] = RectCenter(cfg.ptb.PTBwindowRect); % Get the centre coordinate of the window
 [cfg.ptb.screenXpixels, cfg.ptb.screenYpixels] = Screen('WindowSize', cfg.ptb.PTBwindow); % Get the center coordinate of the window in pixels
 cfg.ptb.ifi = Screen('GetFlipInterval', cfg.ptb.PTBwindow); % Query the frame duration
 cfg.ptb.framerate = Screen('FrameRate', cfg.ptb.PTBwindow); % Sync us and get a time stamp
 cfg.ptb.waitframes = 1; % set up waitframes
 
 % Position parameters
-cfg.ptb.yHigh                          = cfg.ptb.yCenter/2 ;
-cfg.ptb.yBottom                        = 9/5*cfg.ptb.yCenter ;
+cfg.ptb.yHigh                          = cfg.ptb.yCentre/2 ;
+cfg.ptb.yBottom                        = 9/5*cfg.ptb.yCentre;
+
+% Coordinates of stimuli
+cfg.exp.numStim = round(sqrt(cfg.exp.nStim));
+[x, y] = meshgrid((1:cfg.exp.numStim)-cfg.exp.numStim+cfg.exp.numStim/4, (1:cfg.exp.numStim)-cfg.exp.numStim/1.8);
+[x, y] = meshgrid(-2:1:2, -2:1:2);
+cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels)/(cfg.exp.numStim);
+x = x .* cfg.ptb.pixelScale;
+y = y .* cfg.ptb.pixelScale;
+cfg.ptb.coord = [reshape(x, 1, cfg.exp.nStim)+cfg.ptb.xCentre; reshape(y, 1, cfg.exp.nStim)+cfg.ptb.yCentre];
+% COORD = COORD(:,randperm(size(COORD, 2)));
+cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)-round(cfg.ptb.pixelScale/2);...
+                    cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)];
 
 % Instructions parameters
 load([cfg.path.stim 'text.mat'], 'text');
@@ -118,5 +131,5 @@ cfg.ptb.text.gray                      = [180 180 180]; % gray
 cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
 cfg.ptb.text.bigFont                   = 25;
 
-
+exp01_one_show_v01(cfg)
 
