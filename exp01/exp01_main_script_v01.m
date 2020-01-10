@@ -17,7 +17,7 @@ clear all; close all; clc; rng('shuffle'); clear mex;
 %% What to do
 % =========================================================================
 
-cfg.do.debug                       = 0;         % should we run in debug mode?
+cfg.do.debug                       = 1;         % should we run in debug mode?
 
 cfg.do.instructions                = 1;         % do we want instructions?
 cfg.do.training                    = 1;         % should we play training
@@ -56,7 +56,7 @@ cfg.path.instructions                          = ([cfg.path.stim,'Instructions/I
 cfg.path.training                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/raw';  %'raw/training/';  % path to save raw exp data
 cfg.path.main_exp                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/main_exp';  % 'raw/main_exp/';  % path to save main exp data
 
-create_missing_directories(cfg.path);
+% create_missing_directories(cfg.path); % need to specify file location!
 
 
 %% Ask for subject id
@@ -73,8 +73,6 @@ cfg.hostname        = deblank(cfg.hostname);  % remove wired characters
 cfg.start_time      = datestr(now, 30); % start time
 cfg.fname           = sprintf('%02i_%s_%s', cfg.subid, cfg.subname, cfg.start_time);
 
-% create_missing_directories(cfg.path); % need to specify file location!
-
 
 
 %%  Set up psychtoolbox, open screen etc., save to cfg structure
@@ -88,7 +86,7 @@ end
 
 Screen('Preference', 'SkipSyncTests', 0);
 Screen('Preference','VisualDebugLevel', 0);  % supress start screen
-HideCursor;
+% HideCursor;
 
 cfg.ptb.screens = Screen('Screens'); % open screen
 cfg.ptb.screenNumber = max(cfg.ptb.screens); % counter the number of max screens
