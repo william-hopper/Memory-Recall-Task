@@ -35,9 +35,10 @@ else
 end
 
 
-cfg.exp.n_trials                   = 30;        % number of trials
+cfg.exp.n_trials                   = 1;        % number of trials
 cfg.exp.baseline_reimbursement     = 15;        % how much money we promise as a baseline
-cfg.exp.nStim                      = 16;        % how many individual stimuli 
+cfg.exp.n_stim                     = 16;        % how many individual stimuli
+cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
 cfg.exp.time.flip_speed            = 0.5;       % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
@@ -54,11 +55,21 @@ addpath(genpath(pwd));  % add all the sub functions
 
 cfg.path.stim                                  = 'Stimuli/'; % link to Stimuli folder
 cfg.path.instructions                          = ([cfg.path.stim,'Instructions/Image_instructions/']);
+cfg.path.images                                = ([cfg.path.stim,'Images/']);
 cfg.path.training                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/raw';  %'raw/training/';  % path to save raw exp data
 cfg.path.main_exp                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/main_exp';  % 'raw/main_exp/';  % path to save main exp data
 
 % create_missing_directories(cfg.path); % need to specify file location!
 
+
+%% Generate permutations of pairs
+% =========================================================================
+cfg.exp.pair_perms = generate_pair_perms_v01(cfg);
+
+%% Generate permutations image locations
+% 1:n_stim -> grid read left to right, top to bottom
+% =========================================================================
+cfg.exp.location_perms = generate_location_perms_v01(cfg);
 
 %% Ask for subject id
 % =========================================================================
@@ -75,6 +86,19 @@ cfg.start_time      = datestr(now, 30); % start time
 cfg.fname           = sprintf('%02i_%s_%s', cfg.subid, cfg.subname, cfg.start_time);
 
 
+%% initialise keyboard
+% =========================================================================
+
+KbName('UnifyKeyNames');
+cfg.key.space  = KbName('space');
+cfg.key.escape = KbName('ESCAPE');
+cfg.key.enter = KbName('Return');
+cfg.key.left = KbName('LeftArrow');
+cfg.key.right = KbName('RightArrow');
+cfg.key.y = KbName('y');
+cfg.key.n = KbName('n');
+cfg.key.o = KbName('o');
+
 
 %%  Set up psychtoolbox, open screen etc., save to cfg structure
 % =======================================================================
@@ -85,8 +109,8 @@ if cfg.do.debug
     PsychDebugWindowConfiguration;  % added for the testing phase
 end
 
-Screen('Preference', 'SkipSyncTests', 0);
-Screen('Preference','VisualDebugLevel', 0);  % supress start screen
+Screen('Preference', 'SkipSyncTests', 1);
+Screen('Preference', 'VisualDebugLevel', 0);  % supress start screen
 % HideCursor;
 
 cfg.ptb.screens = Screen('Screens'); % open screen
@@ -107,19 +131,58 @@ cfg.ptb.yHigh                          = cfg.ptb.yCentre/2 ;
 cfg.ptb.yBottom                        = 9/5*cfg.ptb.yCentre;
 
 % Coordinates of stimuli
-cfg.exp.numStim = round(sqrt(cfg.exp.nStim));
-[x, y] = meshgrid((1:cfg.exp.numStim)-cfg.exp.numStim+cfg.exp.numStim/4, (1:cfg.exp.numStim)-cfg.exp.numStim/1.8);
-[x, y] = meshgrid(-2:1:2, -2:1:2);
-cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels)/(cfg.exp.numStim);
+cfg.exp.numStim = round(sqrt(cfg.exp.n_stim));
+cfg.ptb.grid_dim = 1.5;
+[x, y] = meshgrid(-cfg.ptb.grid_dim:1:cfg.ptb.grid_dim, -cfg.ptb.grid_dim:1:cfg.ptb.grid_dim);
+cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim * 2 + 2);
 x = x .* cfg.ptb.pixelScale;
 y = y .* cfg.ptb.pixelScale;
-cfg.ptb.coord = [reshape(x, 1, cfg.exp.nStim)+cfg.ptb.xCentre; reshape(y, 1, cfg.exp.nStim)+cfg.ptb.yCentre];
-% COORD = COORD(:,randperm(size(COORD, 2)));
+cfg.ptb.coord = [reshape(x', 1, cfg.exp.n_stim)+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim)+cfg.ptb.yCentre]; % coordinates of rectangle centre
 cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)-round(cfg.ptb.pixelScale/2);...
-                    cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)];
+    cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)]; % pixel location of grid
+cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
 
+
+% Load Images
+% Check to make sure that folder actually exists.  Warn user if it doesn't.
+if ~isdir(cfg.path.images)
+    errorMessage = sprintf('Error: The following folder does not exist:\n%s', cfg.path.images);
+    uiwait(warndlg(errorMessage));
+    return;
+end
+
+% Get a list of all files in the folder with the desired file name pattern.
+filePattern = fullfile(cfg.path.images, '*.jfif'); % Change to whatever pattern you need.
+cfg.stim.theImages = dir(filePattern);
+for k = 1:cfg.exp.n_stim
+    
+    baseFileName = cfg.stim.theImages(k).name;
+    fullFileName = fullfile(cfg.path.images, baseFileName);
+    cfg.stim.theImages(k).array = imread(fullFileName); % read the file
+    
+    cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
+    cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
+    cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
+    cfg.stim.theImages(k).adj_size(1) = cfg.stim.theImages(k).adj_size(2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
+    cfg.stim.theImages(k).texture = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
+    
+    % rescale image to grid
+    cfg.stim.theImages(k).img_rect = [0 0 cfg.stim.theImages(k).adj_size(1) cfg.stim.theImages(k).adj_size(1)];
+    
+    % generate an image rectangle for each grid location
+    for nGrid = 1:cfg.exp.n_stim
+        
+        cfg.stim.theImages(k).scaled_rect(:,:,nGrid) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
+    
+    end
+    
+    % create mask rectangles
+    cfg.stim.mask.rect(:,k) = CenterRectOnPointd(cfg.stim.mask.base_rect, cfg.ptb.coord(1,k), cfg.ptb.coord(2,k));
+    
+    
+end
 % Instructions parameters
-load([cfg.path.stim 'text.mat'], 'text');
+% load([cfg.path.stim 'text.mat'], 'text');
 cfg.ptb.instructions = text;
 
 % Text parameters
@@ -131,5 +194,7 @@ cfg.ptb.text.gray                      = [180 180 180]; % gray
 cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
 cfg.ptb.text.bigFont                   = 25;
 
-exp01_one_show_v01(cfg)
+
+
+exp01_one_trial_v01(cfg);
 
