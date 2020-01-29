@@ -182,11 +182,11 @@ for k = 1:cfg.exp.n_stim
     
 end
 % Instructions parameters
-% load([cfg.path.stim 'text.mat'], 'text');
+load([cfg.path.stim 'text.mat'], 'text');
 cfg.ptb.instructions = text;
 
 % Text parameters
-cfg.ptb.text.size                      = 60; % what should be the size of texts
+cfg.ptb.text.size                      = 30; % what should be the size of texts
 cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
 cfg.ptb.text.Col                       = cfg.ptb.black;
 cfg.ptb.text.Colbis                    = cfg.ptb.white;
@@ -194,6 +194,21 @@ cfg.ptb.text.gray                      = [180 180 180]; % gray
 cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
 cfg.ptb.text.bigFont                   = 25;
 
+Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
+
+
+% Pre-flip confidence response parameters
+cfg.ptb.conf.text_colour = [1 1 1];
+cfg.ptb.conf.numchoices = 8;
+cfg.ptb.conf.label = ['0' '5' '8'];
+cfg.ptb.conf.confirmcolor = [255 255 0];
+cfg.ptb.conf.numcolors = [255 255 255];
+
+
+
+
+%% Main Experiment
+% =========================================================================
 
 if cfg.do.main_experiment
     
@@ -205,3 +220,5 @@ if cfg.do.main_experiment
         
     end
 end
+
+sca; % close screen

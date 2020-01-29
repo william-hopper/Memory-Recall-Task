@@ -21,7 +21,7 @@ Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
 
 
 Screen('Flip', cfg.ptb.PTBwindow);
-WaitSecs(3);
+WaitSecs(0.5);
 
 
 Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect);
@@ -29,7 +29,7 @@ Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
 
 
 Screen('Flip', cfg.ptb.PTBwindow);
-WaitSecs(1);
+WaitSecs(0.5);
 
 for nFlip = 1:cfg.exp.n_pairs
     
