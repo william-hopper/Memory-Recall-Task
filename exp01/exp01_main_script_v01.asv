@@ -35,9 +35,9 @@ else
 end
 
 
-cfg.exp.n_trials                   = 1;                % number of trials
-cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
-cfg.exp.n_stim                     = 16;               % how many individual stimuli
+cfg.exp.n_trials                   = 1;        % number of trials
+cfg.exp.baseline_reimbursement     = 15;        % how much money we promise as a baseline
+cfg.exp.n_stim                     = 16;        % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
 cfg.exp.time.flip_speed            = 0.1;       % number of seconds between flips
@@ -173,7 +173,7 @@ for k = 1:cfg.exp.n_stim
     for nGrid = 1:cfg.exp.n_stim
         
         cfg.stim.theImages(k).scaled_rect(:,:,nGrid) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
-        
+    
     end
     
     % create mask rectangles
@@ -195,13 +195,7 @@ cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
 cfg.ptb.text.bigFont                   = 25;
 
 
-if cfg.do.main_experiment
-    
-    rec = cell(1, cfg.exp.n_trials);
-    
-    for nTrial = 1:cfg.exp.n_trials
-        
-        rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial);
-        
-    end
-end
+rec = cell(cfg.exp.
+
+exp01_one_trial_v01(cfg);
+

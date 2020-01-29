@@ -45,7 +45,7 @@ for nFlip = 1:cfg.exp.n_pairs
     Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
     
     Screen('Flip', cfg.ptb.PTBwindow);
-    WaitSecs(0.5);
+    WaitSecs(cfg.exp.time.flip_speed);
     
 end
 
