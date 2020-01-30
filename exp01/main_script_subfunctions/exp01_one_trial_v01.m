@@ -1,4 +1,4 @@
-function [rec] = exp01_one_trial_v01(cfg, nTrial)
+function [trial] = exp01_one_trial_v01(cfg, nTrial)
 %
 % This function includes one full trial of the experiment
 %
@@ -6,15 +6,17 @@ function [rec] = exp01_one_trial_v01(cfg, nTrial)
 % Original: 15/01/2020
 
 
-nottest = 1;
+trial.start_time = GetSecs;  % when did the show start
+trial.scriptname = mfilename('fullpath');  % save the name of this script
 
-rec.flip_counter = 1; % initialise flip number
+trial.show.flip_counter = 1; % initialise flip number
 
 %% ask initial confidence before seeing stimuli
 % =======================================================================
 
-rec.conf_pre_flip = exp01_conf_v01(cfg, 'flip');
+trial.conf.conf_pre_flip = exp01_conf_v01(cfg, 'flip');
 
+nottest = 1;
 while nottest
     
     %% show one flip of stimuli
@@ -36,7 +38,7 @@ while nottest
     
     if keyCode(cfg.key.y)
         nottest = 1;
-        rec.flip_counter = rec.flip_counter + 1; % increment the flip counter by 1
+        trial.flip_counter = trial.show.flip_counter + 1; % increment the flip counter by 1
     elseif keyCode(cfg.key.n)
         nottest = 0;
     else
@@ -49,14 +51,14 @@ end
 %% ask confidence before being tested
 % =======================================================================
 
-rec.conf_pre_test = exp01_conf_v01(cfg, 'test');
+trial.conf.conf_pre_test = exp01_conf_v01(cfg, 'test');
 
 %% testing
 % =======================================================================
 
 
 
-
+trial.test = exp01_test_v01(cfg, nTrial);
 
 
 

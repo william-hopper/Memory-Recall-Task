@@ -1,4 +1,4 @@
-function [rec] = exp01_conf_v01(cfg,type)
+function [conf] = exp01_conf_v01(cfg,type)
 %
 % This function asks for participant's confidence about how many
 % associations they will remember
@@ -20,7 +20,7 @@ switch type
 end
 
 
-rec = Likert(cfg.ptb.PTBwindow, cfg.ptb.conf.text_colour, question,...
+conf = Likert(cfg.ptb.PTBwindow, cfg.ptb.conf.text_colour, question,...
     cfg.ptb.conf.label(1), cfg.ptb.conf.label(3), cfg.ptb.conf.confirmcolor,...
     cfg.ptb.conf.numchoices, cfg.ptb.conf.label(2), cfg.ptb.conf.numcolors);
 

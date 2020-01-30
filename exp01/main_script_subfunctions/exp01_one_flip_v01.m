@@ -1,12 +1,12 @@
-function [show] = exp01_one_flip_v01(cfg, nTrial)
+function [flip] = exp01_one_flip_v01(cfg, nTrial)
 %
-% This function includes one show of the cards.
+% This function includes one flip of the cards.
 %
 % Author:   William Hopper
 % Original: 10/01/2020
 
-show.trial.show.start_time = GetSecs;  % when did the show start
-show.scriptname = mfilename('fullpath');  % save the name of this script
+% flip.trial.flip.start_time = GetSecs;  % when did the show start
+% flip.scriptname = mfilename('fullpath');  % save the name of this script
 
 
 for k = 1:cfg.exp.n_stim

@@ -17,7 +17,7 @@ clear all; close all; clc; rng('default'); clear mex;
 %% What to do
 % =========================================================================
 
-cfg.do.debug                       = 1;         % should we run in debug mode?
+cfg.do.debug                       = 0;         % should we run in debug mode?
 
 cfg.do.instructions                = 1;         % do we want instructions?
 cfg.do.training                    = 1;         % should we play training
@@ -55,7 +55,7 @@ addpath(genpath(pwd));  % add all the sub functions
 
 cfg.path.stim                                  = 'Stimuli/'; % link to Stimuli folder
 cfg.path.instructions                          = ([cfg.path.stim,'Instructions/Image_instructions/']);
-cfg.path.images                                = ([cfg.path.stim,'pingu/']);
+cfg.path.images                                = ([cfg.path.stim,'Images/']);
 cfg.path.training                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/raw';  %'raw/training/';  % path to save raw exp data
 cfg.path.main_exp                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/main_exp';  % 'raw/main_exp/';  % path to save main exp data
 
@@ -80,13 +80,12 @@ cfg.exp.pair_perms = generate_pair_perms_v01(cfg);
 cfg.exp.location_perms = generate_location_perms_v01(cfg);
 
 %% Generate order of images tested
+% as with pair_perms (:,1) is first pair, (:,2) is second pair etc...
+% function shuffles pairs for testing
 % =========================================================================
 
-for nTrial = 1:cfg.exp.n_trials
+cfg.exp.test_perms = generate_test_perms_v01(cfg);
 
-    cfg.exp.test_perms(
-
-end
 %% Ask for subject id
 % =========================================================================
 
@@ -122,7 +121,7 @@ cfg.key.o = KbName('o');
 PsychDefaultSetup(2);
 
 if cfg.do.debug
-    PsychDebugWindowConfiguration;  % added for the testing phase
+    PsychDebugWindowConfiguration(1);  % added for the testing phase
 end
 
 Screen('Preference', 'SkipSyncTests', 1);
@@ -190,7 +189,7 @@ for k = 1:cfg.exp.n_stim
     % generate an image rectangle for each grid location
     for nGrid = 1:cfg.exp.n_stim
         
-        cfg.stim.theImages(k).scaled_rect(:,:,nGrid) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
+        cfg.stim.theImages(k).scaled_rect(nGrid,:) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
         
     end
     
