@@ -49,7 +49,7 @@ end
 %% ask confidence before being tested
 % =======================================================================
 
-rec.conf_pre_test = exp01_conf_v01(cfg, 'test');
+rec.conf_pre_flip = exp01_conf_v01(cfg, 'test');
 
 %% testing
 % =======================================================================
