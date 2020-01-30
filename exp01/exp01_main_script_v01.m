@@ -11,7 +11,7 @@
 
 %% Clearing
 % =========================================================================
-clear all; close all; clc; rng('shuffle'); clear mex;
+clear all; close all; clc; rng('default'); clear mex;
 
 
 %% What to do
@@ -35,12 +35,12 @@ else
 end
 
 
-cfg.exp.n_trials                   = 1;                % number of trials
+cfg.exp.n_trials                   = 3;                % number of trials
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
-cfg.exp.time.flip_speed            = 0.1;       % number of seconds between flips
+cfg.exp.time.flip_speed            = 0.5;       % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
 cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
 
@@ -55,7 +55,7 @@ addpath(genpath(pwd));  % add all the sub functions
 
 cfg.path.stim                                  = 'Stimuli/'; % link to Stimuli folder
 cfg.path.instructions                          = ([cfg.path.stim,'Instructions/Image_instructions/']);
-cfg.path.images                                = ([cfg.path.stim,'Images/']);
+cfg.path.images                                = ([cfg.path.stim,'pingu/']);
 cfg.path.training                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/raw';  %'raw/training/';  % path to save raw exp data
 cfg.path.main_exp                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/main_exp';  % 'raw/main_exp/';  % path to save main exp data
 
@@ -63,14 +63,30 @@ cfg.path.main_exp                              = '.../.../.../ownCloud/PhD/Matla
 
 
 %% Generate permutations of pairs
+% value refers to the image number from stimuli/images
+% row 1 & 2 of column i are a pair
 % =========================================================================
+
 cfg.exp.pair_perms = generate_pair_perms_v01(cfg);
 
 %% Generate permutations image locations
 % 1:n_stim -> grid read left to right, top to bottom
+% EXAMPLE WITH A 4x4 GRID:
+% location_perms(1) = top left corner, locations_perms(16) = bottom right
+% corner -- value of location_perms refers to which image i.e. if
+% location_perms(4) = 8 then image 8 will be shown in the top right corner
 % =========================================================================
+
 cfg.exp.location_perms = generate_location_perms_v01(cfg);
 
+%% Generate order of images tested
+% =========================================================================
+
+for nTrial = 1:cfg.exp.n_trials
+
+    cfg.exp.test_perms(
+
+end
 %% Ask for subject id
 % =========================================================================
 
@@ -160,6 +176,8 @@ for k = 1:cfg.exp.n_stim
     fullFileName = fullfile(cfg.path.images, baseFileName);
     cfg.stim.theImages(k).array = imread(fullFileName); % read the file
     
+    % for each image generate an image texture and scale it appropriately
+    % for the grid
     cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
     cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
     cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
