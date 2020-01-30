@@ -11,7 +11,7 @@
 
 %% Clearing
 % =========================================================================
-clear all; close all; clc; rng('shuffle'); clear mex;
+clear all; close all; clc; rng('default'); clear mex;
 
 
 %% What to do
@@ -68,6 +68,9 @@ cfg.exp.pair_perms = generate_pair_perms_v01(cfg);
 
 %% Generate permutations image locations
 % 1:n_stim -> grid read left to right, top to bottom
+% location_perms(1) = top left corner, locations_perms(16) = bottom right
+% corner -- value of location_perms refers to which image i.e. if
+% location_perms(4) = 8 then image 8 will be shown in the top right corner
 % =========================================================================
 cfg.exp.location_perms = generate_location_perms_v01(cfg);
 
@@ -186,7 +189,7 @@ load([cfg.path.stim 'text.mat'], 'text');
 cfg.ptb.instructions = text;
 
 % Text parameters
-cfg.ptb.text.size                      = 15; % what should be the size of texts
+cfg.ptb.text.size                      = 30; % what should be the size of texts
 cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
 cfg.ptb.text.Col                       = cfg.ptb.black;
 cfg.ptb.text.Colbis                    = cfg.ptb.white;
@@ -198,7 +201,7 @@ Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
 
 
 % Pre-flip confidence response parameters
-cfg.ptb.conf.text_colour = [232, 28, 28];
+cfg.ptb.conf.text_colour = [1 1 1];
 cfg.ptb.conf.numchoices = 8;
 cfg.ptb.conf.label = ['0' '5' '8'];
 cfg.ptb.conf.confirmcolor = [255 255 0];
