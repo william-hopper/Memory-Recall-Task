@@ -17,8 +17,8 @@ clear all; close all; clc; rng('shuffle'); clear mex;
 %% What to do
 % =========================================================================
 
-cfg.do.debug                       = 1;         % should we run in debug mode?
-cfg.do.cheat                       = 1;         % do we want to cheat?
+cfg.do.debug                       = 0;         % should we run in debug mode?
+cfg.do.cheat                       = 0;         % do we want to cheat?
 
 cfg.do.instructions                = 1;         % do we want instructions?
 cfg.do.training                    = 1;         % should we play training
@@ -36,12 +36,12 @@ else
 end
 
 
-cfg.exp.n_trials                   = 3;                % number of trials
+cfg.exp.n_trials                   = 10;                % number of trials
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
-cfg.exp.time.flip_speed            = 0.5;       % number of seconds between flips
+cfg.exp.time.flip_speed            = 1;       % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
 cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
 
@@ -54,11 +54,11 @@ cfg.exp.time.show_feedback         = 5;         % how long should the feedback b
 % =========================================================================
 addpath(genpath(pwd));  % add all the sub functions
 
-cfg.path.stim                                  = 'Stimuli/'; % link to Stimuli folder
-cfg.path.instructions                          = ([cfg.path.stim,'Instructions/Image_instructions/']);
-cfg.path.images                                = ([cfg.path.stim,'Images/']);
-cfg.path.training                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/raw';  %'raw/training/';  % path to save raw exp data
-cfg.path.main_exp                              = '.../.../.../ownCloud/PhD/Matlab/Memory-Recall-Task/main_exp';  % 'raw/main_exp/';  % path to save main exp data
+cfg.path.stim                     = 'Stimuli/'; % link to Stimuli folder
+cfg.path.instructions             = ([cfg.path.stim,'Instructions/Image_instructions/']);
+cfg.path.images                   = ([cfg.path.stim,'Images/']);
+cfg.path.training                 = ['C:/Users/' getenv('username') '/ownCloud/PhD/Matlab/Memory-Recall-Task/exp01/raw/training/'];  %'raw/training/';  % path to save raw exp data
+cfg.path.main_exp                 = ['C:/Users/' getenv('username') '/ownCloud/PhD/Matlab/Memory-Recall-Task/exp01/raw/main/'];  % 'raw/main_exp/';  % path to save main exp data
 
 % create_missing_directories(cfg.path); % need to specify file location!
 
@@ -177,84 +177,91 @@ cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
 % cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
 
 
-    % Load Images
-    % Check to make sure that folder actually exists.  Warn user if it doesn't.
-    if ~isdir(cfg.path.images)
-        errorMessage = sprintf('Error: The following folder does not exist:\n%s', cfg.path.images);
-        uiwait(warndlg(errorMessage));
-        return;
-    end
+% Load Images
+% Check to make sure that folder actually exists.  Warn user if it doesn't.
+if ~isdir(cfg.path.images)
+    errorMessage = sprintf('Error: The following folder does not exist:\n%s', cfg.path.images);
+    uiwait(warndlg(errorMessage));
+    return;
+end
+
+% Get a list of all files in the folder with the desired file name pattern.
+filePattern = fullfile(cfg.path.images, '*.jfif'); % Change to whatever pattern you need.
+cfg.stim.theImages = dir(filePattern);
+for k = 1:cfg.exp.n_stim
     
-    % Get a list of all files in the folder with the desired file name pattern.
-    filePattern = fullfile(cfg.path.images, '*.jfif'); % Change to whatever pattern you need.
-    cfg.stim.theImages = dir(filePattern);
-    for k = 1:cfg.exp.n_stim
+    baseFileName = cfg.stim.theImages(k).name;
+    fullFileName = fullfile(cfg.path.images, baseFileName);
+    cfg.stim.theImages(k).array = imread(fullFileName); % read the file
+    
+    % for each image generate an image texture and scale it appropriately
+    % for the grid
+    cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
+    cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
+    cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
+    cfg.stim.theImages(k).adj_size(1) = cfg.stim.theImages(k).adj_size(2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
+    cfg.stim.theImages(k).texture = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
+    
+    % rescale image to grid
+    cfg.stim.theImages(k).img_rect = [0 0 cfg.stim.theImages(k).adj_size(1) cfg.stim.theImages(k).adj_size(1)];
+    
+    % generate an image rectangle for each grid location
+    for nGrid = 1:cfg.exp.n_stim
         
-        baseFileName = cfg.stim.theImages(k).name;
-        fullFileName = fullfile(cfg.path.images, baseFileName);
-        cfg.stim.theImages(k).array = imread(fullFileName); % read the file
-        
-        % for each image generate an image texture and scale it appropriately
-        % for the grid
-        cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
-        cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
-        cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
-        cfg.stim.theImages(k).adj_size(1) = cfg.stim.theImages(k).adj_size(2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
-        cfg.stim.theImages(k).texture = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
-        
-        % rescale image to grid
-        cfg.stim.theImages(k).img_rect = [0 0 cfg.stim.theImages(k).adj_size(1) cfg.stim.theImages(k).adj_size(1)];
-        
-        % generate an image rectangle for each grid location
-        for nGrid = 1:cfg.exp.n_stim
-            
-            cfg.stim.theImages(k).scaled_rect(nGrid,:) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
-            
-        end
-        
-        % create mask rectangles
-        cfg.stim.mask.rect(:,k) = CenterRectOnPointd(cfg.stim.mask.base_rect, cfg.ptb.coord(1,k), cfg.ptb.coord(2,k));
-        
+        cfg.stim.theImages(k).scaled_rect(nGrid,:) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
         
     end
-    % Instructions parameters
-    load([cfg.path.stim 'text.mat'], 'text');
-    cfg.ptb.instructions = text;
     
-    % Text parameters
-    cfg.ptb.text.size                      = 30; % what should be the size of texts
-    cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
-    cfg.ptb.text.Col                       = cfg.ptb.black;
-    cfg.ptb.text.Colbis                    = cfg.ptb.white;
-    cfg.ptb.text.gray                      = [180 180 180]; % gray
-    cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
-    cfg.ptb.text.bigFont                   = 25;
-    
-    Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
+    % create mask rectangles
+    cfg.stim.mask.rect(:,k) = CenterRectOnPointd(cfg.stim.mask.base_rect, cfg.ptb.coord(1,k), cfg.ptb.coord(2,k));
     
     
-    % Pre-flip confidence response parameters
-    cfg.ptb.conf.text_colour = [1 1 1];
-    cfg.ptb.conf.numchoices = 8;
-    cfg.ptb.conf.label = ['0' '5' '8'];
-    cfg.ptb.conf.confirmcolor = [255 255 0];
-    cfg.ptb.conf.numcolors = [255 255 255];
+end
+% Instructions parameters
+load([cfg.path.stim 'text.mat'], 'text');
+cfg.ptb.instructions = text;
+
+% Text parameters
+cfg.ptb.text.size                      = 30; % what should be the size of texts
+cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
+cfg.ptb.text.Col                       = cfg.ptb.black;
+cfg.ptb.text.Colbis                    = cfg.ptb.white;
+cfg.ptb.text.gray                      = [180 180 180]; % gray
+cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
+cfg.ptb.text.bigFont                   = 25;
+
+Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
+
+
+% Pre-flip confidence response parameters
+cfg.ptb.conf.text_colour = [1 1 1];
+cfg.ptb.conf.numchoices = 8;
+cfg.ptb.conf.label = ['0' '5' '8'];
+cfg.ptb.conf.confirmcolor = [255 255 0];
+cfg.ptb.conf.numcolors = [255 255 255];
+
+
+
+
+%% Main Experiment
+% =========================================================================
+
+if cfg.do.main_experiment
     
+    rec = cell(1, cfg.exp.n_trials);
     
-    
-    
-    %% Main Experiment
-    % =========================================================================
-    
-    if cfg.do.main_experiment
+    for nTrial = 1:cfg.exp.n_trials
         
-        rec = cell(1, cfg.exp.n_trials);
+        rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial);
         
-        for nTrial = 1:cfg.exp.n_trials
-            
-            rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial);
-            
-        end
     end
-    
-    sca; % close screen
+end
+
+%% Save
+% =========================================================================
+
+savewhere = [cfg.path.main_exp 'main_exp_' cfg.fname];
+save(savewhere, 'cfg', 'rec');  % save training
+
+
+sca; % close screen

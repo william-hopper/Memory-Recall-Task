@@ -20,33 +20,58 @@ Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
 
 [~, T] = Screen('Flip', cfg.ptb.PTBwindow);
 
+diff = ~mod(nTrial, 2); % 0 on odd trials/1 on even trials
+
 for nPair = 1:cfg.exp.n_pairs
     
     % which pair is being tested
     show = cfg.exp.location_perms(nTrial,:) == cfg.exp.test_perms(:,nPair,nTrial); % logical vector of which two stimuli are being tested (first row is stimuli shown)
     hide = ~show(1,:); % logical vector - hide all the other locations
     
-    
-    %% draw the test image
-    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).texture, [],...
-        cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
-    
-    switch cfg.do.cheat
-        case 0
-            
-            % mask all the other locations
-            Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
-            
-        case 1
-            
-            hide = ~or(show(1,:),show(2,:)); % logical vector of ~show i.e. all the ones to hide
-            Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
-            Screen('FillRect', cfg.ptb.PTBwindow, [0 1 0], cfg.stim.mask.rect(:,show(2,:)));
-            
-    end
-    
     % draw the grid!
     Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
+    
+    
+    
+    switch diff
+        case 0 % 'easy' - no mask - 1st of pair highlighted
+            
+            % draw the test image
+            for k = 1:cfg.exp.n_stim
+                Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(cfg.exp.location_perms(nTrial,k)).texture, [],...
+                    cfg.stim.theImages(cfg.exp.location_perms(nTrial,k)).scaled_rect(k,:), 0);
+            end
+            
+            % draw grid and highlight first of test pair
+            Screen('FrameRect', cfg.ptb.PTBwindow, [0 191 255], cfg.ptb.grid(:,show(1,:)), 10);
+            
+            switch cfg.do.cheat
+                case 0
+                case 1
+                    Screen('FrameRect', cfg.ptb.PTBwindow, [0 255 0], cfg.ptb.grid(:,show(2,:)), 10)
+                    
+            end
+        case 1 % 'hard' - all but test image masked
+            
+            % draw the test image
+            Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).texture, [],...
+                cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
+            
+            switch cfg.do.cheat
+                case 0
+                    
+                    % mask all the other locations
+                    Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
+                    
+                case 1
+                    
+                    hide = ~or(show(1,:),show(2,:)); % logical vector of ~show i.e. all the ones to hide
+                    Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
+                    Screen('FillRect', cfg.ptb.PTBwindow, [0 1 0], cfg.stim.mask.rect(:,show(2,:)));
+                    
+            end
+    end
+    
     
     % flip
     [~, T] = Screen('Flip', cfg.ptb.PTBwindow, T + cfg.exp.time.response_speed);
