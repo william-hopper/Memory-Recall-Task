@@ -12,8 +12,13 @@ function [test] = exp01_test_v01(cfg, nTrial)
 test.response = zeros(cfg.exp.n_pairs, 2);
 test.RT = zeros(cfg.exp.n_pairs,1);
 
-% test start time
-T = GetSecs();
+% mask all the locations
+Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect);
+
+% draw the grid!
+Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
+
+[~, T] = Screen('Flip', cfg.ptb.PTBwindow);
 
 for nPair = 1:cfg.exp.n_pairs
     
@@ -26,8 +31,19 @@ for nPair = 1:cfg.exp.n_pairs
     Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).texture, [],...
         cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
     
-    % mask all the other locations
-    Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
+    switch cfg.do.cheat
+        case 0
+            
+            % mask all the other locations
+            Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
+            
+        case 1
+            
+            hide = ~or(show(1,:),show(2,:)); % logical vector of ~show i.e. all the ones to hide
+            Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
+            Screen('FillRect', cfg.ptb.PTBwindow, [0 1 0], cfg.stim.mask.rect(:,show(2,:)));
+            
+    end
     
     % draw the grid!
     Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
@@ -49,14 +65,6 @@ for nPair = 1:cfg.exp.n_pairs
                 mX < cfg.ptb.grid(3,show(2,:)) &&...
                 mY > cfg.ptb.grid(2,show(2,:)) &&...
                 mY < cfg.ptb.grid(4,show(2,:))
-            
-            %                 mX > cfg.stim.theImages(cfg.exp.test_perms(2,nPair,nTrial)).scaled_rect(show(2,:),1) &&...
-            %                 mX < cfg.stim.theImages(cfg.exp.test_perms(2,nPair,nTrial)).scaled_rect(show(2,:),3) &&...
-            %                 mY > cfg.stim.theImages(cfg.exp.test_perms(2,nPair,nTrial)).scaled_rect(show(2,:),4) &&...
-            %                 mY < cfg.stim.theImages(cfg.exp.test_perms(2,nPair,nTrial)).scaled_rect(show(2,:),2)
-            %
-            
-            disp('Help')
             
             % reaction time
             test.RT(nPair) = GetSecs() - T;
@@ -80,8 +88,6 @@ for nPair = 1:cfg.exp.n_pairs
             % incorrect response but still a response
             test.response(nPair,1) = 1;
             test.response(nPair,2) = 0;
-            
-            disp('dont Help')
             
             % wait for buttons to be released
             while any(buttons)
