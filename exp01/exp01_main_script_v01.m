@@ -17,7 +17,7 @@ clear all; close all; clc; rng('default'); clear mex;
 %% What to do
 % =========================================================================
 
-cfg.do.debug                       = 0;         % should we run in debug mode?
+cfg.do.debug                       = 1;         % should we run in debug mode?
 
 cfg.do.instructions                = 1;         % do we want instructions?
 cfg.do.training                    = 1;         % should we play training
@@ -145,11 +145,19 @@ cfg.ptb.waitframes = 1; % set up waitframes
 cfg.ptb.yHigh                          = cfg.ptb.yCentre/2 ;
 cfg.ptb.yBottom                        = 9/5*cfg.ptb.yCentre;
 
+% pre-allocate coord/grid array (an array for each difficulty level
+% cfg.ptb.coord = zeros(2, cfg.exp.n_stim, 2);
+% cfg.ptb.grid = zeros(4, cfg.exp.n_stim, 2);
+
+cfg.ptb.grid_dim(1) = 1.5; % 4 squares
+cfg.ptb.grid_dim(2) = 2.5; % 6 squares
+
 % Coordinates of stimuli
 cfg.exp.numStim = round(sqrt(cfg.exp.n_stim));
-cfg.ptb.grid_dim = 1.5;
-[x, y] = meshgrid(-cfg.ptb.grid_dim:1:cfg.ptb.grid_dim, -cfg.ptb.grid_dim:1:cfg.ptb.grid_dim);
-cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim * 2 + 2);
+
+% easy (4x4)
+[x, y] = meshgrid(-cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1), -cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1));
+cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(1) * 2 + 2);
 x = x .* cfg.ptb.pixelScale;
 y = y .* cfg.ptb.pixelScale;
 cfg.ptb.coord = [reshape(x', 1, cfg.exp.n_stim)+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim)+cfg.ptb.yCentre]; % coordinates of rectangle centre
@@ -157,85 +165,95 @@ cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:
     cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)]; % pixel location of grid
 cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
 
+% % hard (6x4)
+% [x, y] = meshgrid(-cfg.ptb.grid_dim(2):1:cfg.ptb.grid_dim(2), -cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1));
+% cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(1) * 2 + 2);
+% x = x .* cfg.ptb.pixelScale;
+% y = y .* cfg.ptb.pixelScale;
+% cfg.ptb.coord = [reshape(x', 1, cfg.exp.n_stim)+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim)+cfg.ptb.yCentre]; % coordinates of rectangle centre
+% cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)-round(cfg.ptb.pixelScale/2);...
+%     cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)]; % pixel location of grid
+% cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
 
-% Load Images
-% Check to make sure that folder actually exists.  Warn user if it doesn't.
-if ~isdir(cfg.path.images)
-    errorMessage = sprintf('Error: The following folder does not exist:\n%s', cfg.path.images);
-    uiwait(warndlg(errorMessage));
-    return;
-end
 
-% Get a list of all files in the folder with the desired file name pattern.
-filePattern = fullfile(cfg.path.images, '*.jfif'); % Change to whatever pattern you need.
-cfg.stim.theImages = dir(filePattern);
-for k = 1:cfg.exp.n_stim
-    
-    baseFileName = cfg.stim.theImages(k).name;
-    fullFileName = fullfile(cfg.path.images, baseFileName);
-    cfg.stim.theImages(k).array = imread(fullFileName); % read the file
-    
-    % for each image generate an image texture and scale it appropriately
-    % for the grid
-    cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
-    cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
-    cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
-    cfg.stim.theImages(k).adj_size(1) = cfg.stim.theImages(k).adj_size(2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
-    cfg.stim.theImages(k).texture = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
-    
-    % rescale image to grid
-    cfg.stim.theImages(k).img_rect = [0 0 cfg.stim.theImages(k).adj_size(1) cfg.stim.theImages(k).adj_size(1)];
-    
-    % generate an image rectangle for each grid location
-    for nGrid = 1:cfg.exp.n_stim
-        
-        cfg.stim.theImages(k).scaled_rect(nGrid,:) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
-        
+    % Load Images
+    % Check to make sure that folder actually exists.  Warn user if it doesn't.
+    if ~isdir(cfg.path.images)
+        errorMessage = sprintf('Error: The following folder does not exist:\n%s', cfg.path.images);
+        uiwait(warndlg(errorMessage));
+        return;
     end
     
-    % create mask rectangles
-    cfg.stim.mask.rect(:,k) = CenterRectOnPointd(cfg.stim.mask.base_rect, cfg.ptb.coord(1,k), cfg.ptb.coord(2,k));
-    
-    
-end
-% Instructions parameters
-load([cfg.path.stim 'text.mat'], 'text');
-cfg.ptb.instructions = text;
-
-% Text parameters
-cfg.ptb.text.size                      = 30; % what should be the size of texts
-cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
-cfg.ptb.text.Col                       = cfg.ptb.black;
-cfg.ptb.text.Colbis                    = cfg.ptb.white;
-cfg.ptb.text.gray                      = [180 180 180]; % gray
-cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
-cfg.ptb.text.bigFont                   = 25;
-
-Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
-
-
-% Pre-flip confidence response parameters
-cfg.ptb.conf.text_colour = [1 1 1];
-cfg.ptb.conf.numchoices = 8;
-cfg.ptb.conf.label = ['0' '5' '8'];
-cfg.ptb.conf.confirmcolor = [255 255 0];
-cfg.ptb.conf.numcolors = [255 255 255];
-
-
-
-
-%% Main Experiment
-% =========================================================================
-
-if cfg.do.main_experiment
-    
-    rec = cell(1, cfg.exp.n_trials);
-    
-    for nTrial = 1:cfg.exp.n_trials
+    % Get a list of all files in the folder with the desired file name pattern.
+    filePattern = fullfile(cfg.path.images, '*.jfif'); % Change to whatever pattern you need.
+    cfg.stim.theImages = dir(filePattern);
+    for k = 1:cfg.exp.n_stim
         
-        rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial);
+        baseFileName = cfg.stim.theImages(k).name;
+        fullFileName = fullfile(cfg.path.images, baseFileName);
+        cfg.stim.theImages(k).array = imread(fullFileName); % read the file
+        
+        % for each image generate an image texture and scale it appropriately
+        % for the grid
+        cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
+        cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
+        cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
+        cfg.stim.theImages(k).adj_size(1) = cfg.stim.theImages(k).adj_size(2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
+        cfg.stim.theImages(k).texture = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
+        
+        % rescale image to grid
+        cfg.stim.theImages(k).img_rect = [0 0 cfg.stim.theImages(k).adj_size(1) cfg.stim.theImages(k).adj_size(1)];
+        
+        % generate an image rectangle for each grid location
+        for nGrid = 1:cfg.exp.n_stim
+            
+            cfg.stim.theImages(k).scaled_rect(nGrid,:) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
+            
+        end
+        
+        % create mask rectangles
+        cfg.stim.mask.rect(:,k) = CenterRectOnPointd(cfg.stim.mask.base_rect, cfg.ptb.coord(1,k), cfg.ptb.coord(2,k));
+        
         
     end
-end
-
-sca; % close screen
+    % Instructions parameters
+    load([cfg.path.stim 'text.mat'], 'text');
+    cfg.ptb.instructions = text;
+    
+    % Text parameters
+    cfg.ptb.text.size                      = 30; % what should be the size of texts
+    cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
+    cfg.ptb.text.Col                       = cfg.ptb.black;
+    cfg.ptb.text.Colbis                    = cfg.ptb.white;
+    cfg.ptb.text.gray                      = [180 180 180]; % gray
+    cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
+    cfg.ptb.text.bigFont                   = 25;
+    
+    Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
+    
+    
+    % Pre-flip confidence response parameters
+    cfg.ptb.conf.text_colour = [1 1 1];
+    cfg.ptb.conf.numchoices = 8;
+    cfg.ptb.conf.label = ['0' '5' '8'];
+    cfg.ptb.conf.confirmcolor = [255 255 0];
+    cfg.ptb.conf.numcolors = [255 255 255];
+    
+    
+    
+    
+    %% Main Experiment
+    % =========================================================================
+    
+    if cfg.do.main_experiment
+        
+        rec = cell(1, cfg.exp.n_trials);
+        
+        for nTrial = 1:cfg.exp.n_trials
+            
+            rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial);
+            
+        end
+    end
+    
+    sca; % close screen

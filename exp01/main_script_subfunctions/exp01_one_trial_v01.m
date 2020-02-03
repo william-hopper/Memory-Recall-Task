@@ -22,7 +22,7 @@ while nottest
     %% show one flip of stimuli
     % =======================================================================
     
-    exp01_one_show_v01(cfg, nTrial);
+    exp01_one_flip_v01(cfg, nTrial);
     
     
     %% ask if repeat or continue to test
