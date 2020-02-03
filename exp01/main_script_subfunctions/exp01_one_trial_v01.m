@@ -57,10 +57,17 @@ trial.conf.conf_pre_test = exp01_conf_v01(cfg, 'test');
 % =======================================================================
 
 
-
 trial.test = exp01_test_v01(cfg, nTrial);
 
 
+%% Display feedback
+% =======================================================================
+trial_score = num2str(sum(trial.test.response(:,2)));
 
+feedback_st = sprintf('%s', [trial_score '/8']);
+DrawFormattedText(cfg.ptb.PTBwindow,feedback_st, 'center', 'center', [1 1 1]);
 
+Screen('Flip', cfg.ptb.PTBwindow);
+
+WaitSecs(3);
 end
