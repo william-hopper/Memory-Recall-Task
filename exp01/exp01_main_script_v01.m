@@ -11,7 +11,7 @@
 
 %% Clearing
 % =========================================================================
-clear all; close all; clc; rng('default'); clear mex;
+clear all; close all; clc; rng('shuffle'); clear mex;
 
 
 %% What to do
