@@ -36,12 +36,12 @@ else
 end
 
 
-cfg.exp.n_trials                   = 10;                % number of trials
+cfg.exp.n_trials                   = 10;               % number of trials
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
-cfg.exp.time.flip_speed            = 1;       % number of seconds between flips
+cfg.exp.time.flip_speed            = 0.51;         % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
 cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
 
