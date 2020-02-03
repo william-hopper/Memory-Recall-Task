@@ -20,8 +20,8 @@ Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
 
 [~, T] = Screen('Flip', cfg.ptb.PTBwindow);
 
-diff = ~mod(nTrial, 2); % 0 on odd trials/1 on even trials
-
+% diff = ~mod(nTrial, 2); % 0 on odd trials/1 on even trials
+diff = 0;
 for nPair = 1:cfg.exp.n_pairs
     
     % which pair is being tested

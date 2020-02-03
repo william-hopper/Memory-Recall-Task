@@ -34,7 +34,7 @@ while nottest
     
     
     % wait for key press for rewatch or not (yes is rewatch)
-    [secs, keyCode] = KbStrokeWait(0, GetSecs + cfg.exp.time.test_rewatch);
+    [~, keyCode] = KbStrokeWait(0, GetSecs + cfg.exp.time.test_rewatch);
     
     if keyCode(cfg.key.y)
         nottest = 1;
@@ -62,12 +62,8 @@ trial.test = exp01_test_v01(cfg, nTrial);
 
 %% Display feedback
 % =======================================================================
-trial_score = num2str(sum(trial.test.response(:,2)));
 
-feedback_st = sprintf('%s', [trial_score '/8']);
-DrawFormattedText(cfg.ptb.PTBwindow,feedback_st, 'center', 'center', [1 1 1]);
+display_feedback_v01(cfg, trial, nTrial);
 
-Screen('Flip', cfg.ptb.PTBwindow);
 
-WaitSecs(3);
 end

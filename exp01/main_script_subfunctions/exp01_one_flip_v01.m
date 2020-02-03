@@ -24,7 +24,8 @@ for nFlip = 1:cfg.exp.n_pairs
     
     %% draw the image
     % cfg.stim.theImages(cfg.exp.pair_perms(:,nFlip)).texture = which image
-    % texture to show - so if pair_perms(:,nFlip) = [6 3] -> images 6 and 3
+    % texture to show - so if pair_perms(:,nFlip) = [1 2] -> pair of 1s
+    % pair_perms(:,nFlip) = [11 12] -> pair of 6s
     %
     % cfg.stim.theImages(cfg.exp.pair_perms(:,nFlip)).scaled_rect(show(:,:),:)
     % - show indexes the spatial location of the image - there is a
