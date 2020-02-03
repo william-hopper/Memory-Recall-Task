@@ -8,28 +8,13 @@ function [flip] = exp01_one_flip_v01(cfg, nTrial)
 % flip.trial.flip.start_time = GetSecs;  % when did the show start
 % flip.scriptname = mfilename('fullpath');  % save the name of this script
 
-
-for k = 1:cfg.exp.n_stim
-    
-    % Draw images to screen
-    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).texture, [], cfg.stim.theImages(k).scaled_rect(cfg.exp.location_perms(nTrial,:) == k,:), 0);
-    
-end
-
-% draw grid - do this each flip!
-Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
-
-
-Screen('Flip', cfg.ptb.PTBwindow);
-WaitSecs(0.5);
-
-
+% mask all the locations
 Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect);
+
+% draw the grid!
 Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
 
-
-Screen('Flip', cfg.ptb.PTBwindow);
-WaitSecs(0.5);
+[~, T] = Screen('Flip', cfg.ptb.PTBwindow);
 
 for nFlip = 1:cfg.exp.n_pairs
     
@@ -55,24 +40,11 @@ for nFlip = 1:cfg.exp.n_pairs
     % draw the grid!
     Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
     
-    Screen('Flip', cfg.ptb.PTBwindow);
-    WaitSecs(cfg.exp.time.flip_speed);
+    % flip at flip speed
+    [~, T] = Screen('Flip', cfg.ptb.PTBwindow, T + cfg.exp.time.flip_speed);
     
 end
 
-for k = 1:cfg.exp.n_stim
-    
-    image = cfg.exp.location_perms(nTrial,k);
-    
-    % Draw images to screen
-    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(image).texture, [], cfg.stim.theImages(image).scaled_rect(k,:), 0);
-    
-end
-
-% draw grid - do this each flip!
-Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
-
-
-Screen('Flip', cfg.ptb.PTBwindow);
+WaitSecs(cfg.exp.time.flip_speed); % need to wait the flip speed on the last flip
 
 end
