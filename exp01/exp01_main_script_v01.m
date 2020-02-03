@@ -18,6 +18,7 @@ clear all; close all; clc; rng('default'); clear mex;
 % =========================================================================
 
 cfg.do.debug                       = 1;         % should we run in debug mode?
+cfg.do.cheat                       = 1;         % do we want to cheat?
 
 cfg.do.instructions                = 1;         % do we want instructions?
 cfg.do.training                    = 1;         % should we play training
