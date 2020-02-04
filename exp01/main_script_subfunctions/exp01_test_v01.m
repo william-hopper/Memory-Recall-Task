@@ -12,6 +12,9 @@ function [test] = exp01_test_v01(cfg, nTrial)
 test.response = zeros(cfg.exp.n_pairs, 2);
 test.RT = zeros(cfg.exp.n_pairs,1);
 
+% pre-allocate
+test.cor_grid = false(1,16);
+
 % mask all the locations
 Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect);
 
@@ -88,6 +91,10 @@ for nPair = 1:cfg.exp.n_pairs
             % correct response
             test.response(nPair,1) = 1;
             test.response(nPair,2) = 1;
+            
+            % grid location
+            test.cor_grid(show(1,:)) = true;
+            test.cor_grid(show(2,:)) = true;
             
             % wait for buttons to be released
             while any(buttons)

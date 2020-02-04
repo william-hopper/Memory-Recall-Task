@@ -37,16 +37,16 @@ end
 
 cfg.exp.random                     = 0;         % randomise test order?
 
-cfg.exp.n_trials                   = 10;               % number of trials
+cfg.exp.n_trials                   = 2;                % number of trials
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
-cfg.exp.time.flip_speed            = 0.2;         % number of seconds between flips
+cfg.exp.time.flip_speed            = 1;         % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
 cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
 
-cfg.exp.time.show_ready            = 2;         % how long should ready be shown at the beginning of each trial?
+cfg.exp.time.show_ready            = 3;         % how long should ready be shown at the beginning of each trial?
 cfg.exp.time.test_rewatch          = 5;         % how long do participants have to decide to rewatch stimuli?
 cfg.exp.time.show_feedback         = 5;         % how long should the feedback be shown at end of the trial?
 
@@ -223,6 +223,7 @@ load([cfg.path.stim 'text.mat'], 'text');
 cfg.ptb.instructions = text;
 
 % Text parameters
+cfg.ptb.text.n_lines                   = 2; % number of lines to wrap instructions at
 cfg.ptb.text.size                      = 30; % what should be the size of texts
 cfg.ptb.text.position                  = cfg.ptb.screenYpixels * 0.20; % Set text position
 cfg.ptb.text.Col                       = cfg.ptb.black;
@@ -236,8 +237,9 @@ Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
 
 % Pre-flip confidence response parameters
 cfg.ptb.conf.text_colour = [1 1 1];
-cfg.ptb.conf.numchoices = 8;
-cfg.ptb.conf.label = ['0' '5' '8'];
+cfg.ptb.conf.numchoices = 9;
+cfg.ptb.conf.label = ['1' '5' '8'];
+cfg.ptb.conf.label = [' ' ' ' ' '];
 cfg.ptb.conf.confirmcolor = [255 255 0];
 cfg.ptb.conf.numcolors = [255 255 255];
 

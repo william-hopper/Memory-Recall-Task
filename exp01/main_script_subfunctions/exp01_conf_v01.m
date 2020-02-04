@@ -12,6 +12,7 @@ function [conf] = exp01_conf_v01(cfg,type)
 
 % change question text depending on which stage of trial (pre-first flip or
 % pre-testing)
+
 switch type
     case 'flip'
         question = cfg.ptb.instructions.conf_pre_flip;
@@ -19,6 +20,7 @@ switch type
         question = cfg.ptb.instructions.conf_pre_test;
 end
 
+question = cfg.ptb.instructions.conf;
 
 conf = Likert_v02(cfg.ptb.PTBwindow, cfg.ptb.conf.text_colour, question,...
     cfg.ptb.conf.label(1), cfg.ptb.conf.label(3), cfg.ptb.conf.confirmcolor,...

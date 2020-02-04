@@ -6,6 +6,7 @@ function [trial] = exp01_one_trial_v01(cfg, nTrial)
 % Original: 15/01/2020
 
 
+
 trial.start_time = GetSecs;  % when did the show start
 trial.scriptname = mfilename('fullpath');  % save the name of this script
 
@@ -27,8 +28,8 @@ while nottest
     
     %% ask if repeat or continue to test
     % =======================================================================
-    
-    DrawFormattedText(cfg.ptb.PTBwindow, cfg.ptb.instructions.test_rewatch, 'center','center', cfg.ptb.white);
+    wrap = ceil(length(cfg.ptb.instructions.test_rewatch)/cfg.ptb.text.n_lines);
+    DrawFormattedText(cfg.ptb.PTBwindow, cfg.ptb.instructions.test_rewatch, 'center','center', cfg.ptb.white, wrap);
     
     Screen('Flip', cfg.ptb.PTBwindow);
     
