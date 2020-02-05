@@ -46,11 +46,11 @@ cfg.exp.n_stim                     = 16;               % how many individual sti
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
 cfg.exp.time.flip_speed            = 1;         % number of seconds between flips
-cfg.exp.time.response_speed        = 3;         % number of seconds for participant response
+cfg.exp.time.response_speed        = 5;         % number of seconds for participant response
 cfg.exp.time.cnf_time              = 3;         % number of seconds for confidence response
 
 cfg.exp.time.trial_num             = 1.5;         % how long should ready be shown at the beginning of each trial?
-cfg.exp.time.test_rewatch          = 5;         % how long do participants have to decide to rewatch stimuli?
+cfg.exp.time.test_rewatch          = 3;         % how long do participants have to decide to rewatch stimuli?
 cfg.exp.time.show_feedback         = 3;         % how long should the feedback be shown at end of the trial?
 
 

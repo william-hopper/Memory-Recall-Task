@@ -26,10 +26,10 @@ train_num = num2str(nTrain);
 flip_num = num2str(cfg.exp.train.flips(nTrain));
 
 DrawFormattedText(cfg.ptb.PTBwindow, [cfg.ptb.instructions.train_num train_num],...
-    'center','center', cfg.ptb.white, [], [] ,[], cfg.ptb.test.vSpacing);
+    'center','center', cfg.ptb.white, [], [] ,[], cfg.ptb.text.vSpacing);
 
 DrawFormattedText(cfg.ptb.PTBwindow, [cfg.ptb.instructions.train_flip_num flip_num],...
-    'center',cfg.ptb.screenYpixels*0.6, cfg.ptb.white, [], [] ,[], cfg.ptb.test.vSpacing);
+    'center',cfg.ptb.screenYpixels*0.6, cfg.ptb.white, [], [] ,[], cfg.ptb.text.vSpacing);
 
 Screen('Flip', cfg.ptb.PTBwindow);
 
@@ -53,7 +53,7 @@ for nFlip = 1:cfg.exp.train.flips(nTrain)
     %% explain the repeat question
     
     wrap = ceil(length(cfg.ptb.instructions.test_rewatch_training)/6);
-    DrawFormattedText(cfg.ptb.PTBwindow, cfg.ptb.instructions.test_rewatch_training, 'center','center', cfg.ptb.white, wrap, [] ,[], cfg.ptb.test.vSpacing);
+    DrawFormattedText(cfg.ptb.PTBwindow, cfg.ptb.instructions.test_rewatch_training, 'center','center', cfg.ptb.white, wrap, [] ,[], cfg.ptb.text.vSpacing);
     
     Screen('Flip', cfg.ptb.PTBwindow);
     
@@ -73,7 +73,7 @@ training.conf.conf_post_flip = exp01_conf_v01(cfg, 'training2');
 % =======================================================================
 
 wrap = ceil(length(cfg.ptb.instructions.test_training)/4);
-DrawFormattedText(cfg.ptb.PTBwindow, cfg.ptb.instructions.test_training, 'center','center', cfg.ptb.white, wrap, [],[], cfg.ptb.test.vSpacing);
+DrawFormattedText(cfg.ptb.PTBwindow, cfg.ptb.instructions.test_training, 'center','center', cfg.ptb.white, wrap, [],[], cfg.ptb.text.vSpacing);
 
 Screen('Flip', cfg.ptb.PTBwindow);
 
