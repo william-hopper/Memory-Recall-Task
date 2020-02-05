@@ -11,7 +11,7 @@
 
 %% Clearing
 % =========================================================================
-clear all; close all; clc; rng('Default'); clear mex;
+clear all; close all; clc; rng('Shuffle'); clear mex;
 
 
 %% What to do
@@ -37,6 +37,9 @@ end
 
 cfg.exp.random                     = 0;         % randomise test order?
 
+cfg.exp.train.trials               = 4;         % number of training trials
+cfg.exp.train.flips                = [1 6 4 2]; % number of flips for each training trial
+
 cfg.exp.n_trials                   = 2;                % number of trials
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
@@ -44,11 +47,11 @@ cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations t
 
 cfg.exp.time.flip_speed            = 1;         % number of seconds between flips
 cfg.exp.time.response_speed        = 2;         % number of seconds for participant response
-cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
+cfg.exp.time.cnf_time              = 3;         % number of seconds for confidence response
 
-cfg.exp.time.show_ready            = 3;         % how long should ready be shown at the beginning of each trial?
-cfg.exp.time.test_rewatch          = 5;         % how long do participants have to decide to rewatch stimuli?
-cfg.exp.time.show_feedback         = 5;         % how long should the feedback be shown at end of the trial?
+cfg.exp.time.trial_num             = 1.5;         % how long should ready be shown at the beginning of each trial?
+cfg.exp.time.test_rewatch          = 3;         % how long do participants have to decide to rewatch stimuli?
+cfg.exp.time.show_feedback         = 3;         % how long should the feedback be shown at end of the trial?
 
 
 %% set paths
@@ -63,30 +66,6 @@ cfg.path.main_exp                 = ['C:/Users/' getenv('username') '/ownCloud/P
 
 % create_missing_directories(cfg.path); % need to specify file location!
 
-
-%% Generate permutations of pairs
-% value refers to the image number from stimuli/images
-% row 1 & 2 of column i are a pair
-% =========================================================================
-
-cfg.exp.pair_perms = generate_pair_perms_v01(cfg);
-
-%% Generate permutations image locations
-% 1:n_stim -> grid read left to right, top to bottom
-% EXAMPLE WITH A 4x4 GRID:
-% location_perms(1) = top left corner, locations_perms(16) = bottom right
-% corner -- value of location_perms refers to which image i.e. if
-% location_perms(4) = 8 then image 8 will be shown in the top right corner
-% =========================================================================
-
-cfg.exp.location_perms = generate_location_perms_v01(cfg);
-
-%% Generate order of images tested
-% as with pair_perms (:,1) is first pair, (:,2) is second pair etc...
-% function shuffles pairs for testing
-% =========================================================================
-
-cfg.exp.test_perms = generate_test_perms_v01(cfg);
 
 %% Ask for subject id
 % =========================================================================
@@ -219,8 +198,8 @@ for k = 1:cfg.exp.n_stim
     
 end
 % Instructions parameters
-load([cfg.path.stim 'text.mat'], 'text');
-cfg.ptb.instructions = text;
+load([cfg.path.stim 'task_text.mat'], 'task_text');
+cfg.ptb.instructions = task_text;
 
 % Text parameters
 cfg.ptb.text.n_lines                   = 2; % number of lines to wrap instructions at
@@ -231,6 +210,7 @@ cfg.ptb.text.Colbis                    = cfg.ptb.white;
 cfg.ptb.text.gray                      = [180 180 180]; % gray
 cfg.ptb.text.ColAlternative            = [50 50 200]; % blue
 cfg.ptb.text.bigFont                   = 25;
+cfg.ptb.test.vSpacing                  = 3;
 
 Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
 
@@ -245,26 +225,97 @@ cfg.ptb.conf.numcolors = [255 255 255];
 
 
 
+%% Training
+% =========================================================================
+if cfg.do.training
+    
+    train_or_main = 'training';
+    
+    %% Generate permutations of pairs
+    % value refers to the image number from stimuli/images
+    % row 1 & 2 of column i are a pair
+    % =========================================================================
+    
+    cfg.exp.train.pair_perms = generate_pair_perms_v01(cfg, train_or_main);
+    
+    %% Generate permutations image locations
+    % 1:n_stim -> grid read left to right, top to bottom
+    % EXAMPLE WITH A 4x4 GRID:
+    % location_perms(1) = top left corner, locations_perms(16) = bottom right
+    % corner -- value of location_perms refers to which image i.e. if
+    % location_perms(4) = 8 then image 8 will be shown in the top right corner
+    % =========================================================================
+    
+    cfg.exp.train.location_perms = generate_location_perms_v01(cfg, train_or_main);
+    
+    %% Generate order of images tested
+    % as with pair_perms (:,1) is first pair, (:,2) is second pair etc...
+    % function shuffles pairs for testing
+    % =========================================================================
+    
+    cfg.exp.train.test_perms = generate_test_perms_v01(cfg, train_or_main);
+    
+    training = cell(1, cfg.exp.train.trials);
+    
+    for nTrain = 1:cfg.exp.train.trials
+        
+        training{1,nTrain} = exp01_one_training_v01(cfg, nTrain, train_or_main);
+        
+    end
+    
+    % save!
+    savewhere = [cfg.path.training 'training_' cfg.fname];
+    save(savewhere, 'cfg', 'training');  % save training
+    
+end
+
+
+
 
 %% Main Experiment
 % =========================================================================
-
 if cfg.do.main_experiment
+    
+    train_or_main = 'main';
+    
+    %% Generate permutations of pairs
+    % value refers to the image number from stimuli/images
+    % row 1 & 2 of column i are a pair
+    % =========================================================================
+    
+    cfg.exp.pair_perms = generate_pair_perms_v01(cfg, train_or_main);
+    
+    %% Generate permutations image locations
+    % 1:n_stim -> grid read left to right, top to bottom
+    % EXAMPLE WITH A 4x4 GRID:
+    % location_perms(1) = top left corner, locations_perms(16) = bottom right
+    % corner -- value of location_perms refers to which image i.e. if
+    % location_perms(4) = 8 then image 8 will be shown in the top right corner
+    % =========================================================================
+    
+    cfg.exp.location_perms = generate_location_perms_v01(cfg, train_or_main);
+    
+    %% Generate order of images tested
+    % as with pair_perms (:,1) is first pair, (:,2) is second pair etc...
+    % function shuffles pairs for testing
+    % =========================================================================
+    
+    cfg.exp.test_perms = generate_test_perms_v01(cfg, train_or_main);
+    
     
     rec = cell(1, cfg.exp.n_trials);
     
     for nTrial = 1:cfg.exp.n_trials
         
-        rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial);
+        rec{1, nTrial} = exp01_one_trial_v01(cfg, nTrial, train_or_main);
         
     end
+    
+    
+    % save!
+    savewhere = [cfg.path.main_exp 'main_exp_' cfg.fname];
+    save(savewhere, 'cfg', 'rec');  % save training
+    
 end
-
-%% Save
-% =========================================================================
-
-savewhere = [cfg.path.main_exp 'main_exp_' cfg.fname];
-save(savewhere, 'cfg', 'rec');  % save training
-
-
+%%
 sca; % close screen

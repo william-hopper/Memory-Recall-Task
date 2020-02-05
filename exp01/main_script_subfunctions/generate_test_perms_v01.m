@@ -1,4 +1,4 @@
-function test_perms = generate_test_perms_v01(cfg)
+function test_perms = generate_test_perms_v01(cfg,train_or_main)
 %
 % This function generates nTrial sets of test permutations taken from
 % pair_perms
@@ -6,12 +6,21 @@ function test_perms = generate_test_perms_v01(cfg)
 % Author:   William Hopper
 % Original: 30/01/2020
 
-test_perms = zeros(2,cfg.exp.n_pairs,cfg.exp.n_trials);
+switch train_or_main
+    case 'training'
+        n_trials   = cfg.exp.train.trials;
+        pair_perms = cfg.exp.train.pair_perms;
+    case 'main'
+        n_trials   = cfg.exp.n_trials;
+        pair_perms = cfg.exp.pair_perms;
+end
 
-for nTrial = 1:cfg.exp.n_trials
-   
+test_perms = zeros(2,cfg.exp.n_pairs,n_trials);
+
+for nTrial = 1:n_trials
+    
     % randomly shuffles the column order
-    test_perms(:,:,nTrial) = cfg.exp.pair_perms(:,randperm(cfg.exp.n_pairs),nTrial);
+    test_perms(:,:,nTrial) = pair_perms(:,randperm(cfg.exp.n_pairs),nTrial);
     
 end
 

@@ -1,4 +1,4 @@
-function [trial] = exp01_one_trial_v01(cfg, nTrial)
+function [trial] = exp01_one_trial_v01(cfg, nTrial, train_or_main)
 %
 % This function includes one full trial of the experiment
 %
@@ -10,20 +10,44 @@ function [trial] = exp01_one_trial_v01(cfg, nTrial)
 trial.start_time = GetSecs;  % when did the show start
 trial.scriptname = mfilename('fullpath');  % save the name of this script
 
-trial.show.flip_counter = 1; % initialise flip number
+
+% flip to clear the buffer
+Screen('Flip', cfg.ptb.PTBwindow);
+
+% training or main experiment?
+switch train_or_main
+    case 'training'
+        trial.type = 'training';
+    case 'main'
+        trial.type = 'main';
+end
+
+%% Display Trial Number
+% =======================================================================
+
+trial_num = num2str(nTrial);
+
+DrawFormattedText(cfg.ptb.PTBwindow, [cfg.ptb.instructions.trial_num trial_num],...
+    'center','center', cfg.ptb.white);
+
+Screen('Flip', cfg.ptb.PTBwindow);
+
+WaitSecs(cfg.exp.time.trial_num);
 
 %% ask initial confidence before seeing stimuli
 % =======================================================================
 
 trial.conf.conf_pre_flip = exp01_conf_v01(cfg, 'flip');
 
+%% show one flip of stimuli
+% =======================================================================
+
+trial.show.flip_counter = 1; % initialise flip number
 nottest = 1;
 while nottest
     
-    %% show one flip of stimuli
-    % =======================================================================
     
-    exp01_one_flip_v01(cfg, nTrial);
+    exp01_one_flip_v01(cfg, nTrial, trial);
     
     
     %% ask if repeat or continue to test
@@ -37,11 +61,9 @@ while nottest
     % wait for key press for rewatch or not (yes is rewatch)
     [~, keyCode] = KbStrokeWait(0, GetSecs + cfg.exp.time.test_rewatch);
     
-    if keyCode(cfg.key.y)
+    if any(keyCode)
         nottest = 1;
-        trial.flip_counter = trial.show.flip_counter + 1; % increment the flip counter by 1
-    elseif keyCode(cfg.key.n)
-        nottest = 0;
+        trial.show.flip_counter = trial.show.flip_counter + 1; % increment the flip counter by 1
     else
         nottest = 0;
     end
@@ -58,13 +80,13 @@ trial.conf.conf_pre_test = exp01_conf_v01(cfg, 'test');
 % =======================================================================
 
 
-trial.test = exp01_test_v01(cfg, nTrial);
+trial.test = exp01_test_v01(cfg, nTrial, trial);
 
 
 %% Display feedback
 % =======================================================================
 
-display_feedback_v01(cfg, trial, nTrial);
+exp01_display_feedback_v01(cfg, trial, nTrial);
 
 
 end

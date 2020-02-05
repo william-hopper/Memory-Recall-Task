@@ -1,4 +1,4 @@
-function [test] = exp01_test_v01(cfg, nTrial)
+function [test] = exp01_test_v01(cfg, nTrial, trial)
 %
 % This function runs one recall test of the experiment
 % participants are shown one image from each pair and must click the
@@ -7,6 +7,18 @@ function [test] = exp01_test_v01(cfg, nTrial)
 %
 % Author:   William Hopper
 % Original: 30/01/2020
+
+% trial type changes location perms!
+switch trial.type
+    case 'training'
+        location_perms = cfg.exp.train.location_perms;
+        pair_perms     = cfg.exp.train.pair_perms;
+        test_perms     = cfg.exp.train.test_perms;
+    case 'main'
+        location_perms = cfg.exp.location_perms;
+        pair_perms     = cfg.exp.pair_perms;
+        test_perms     = cfg.exp.test_perms;
+end
 
 % rec.response(:,1) = response or not? (:,2) = correct response or not?
 test.response = zeros(cfg.exp.n_pairs, 2);
@@ -31,21 +43,21 @@ for nPair = 1:cfg.exp.n_pairs
     switch diff
         case 0 % test phase in the same order
             
-            show = cfg.exp.location_perms(nTrial,:) == cfg.exp.pair_perms(:,nPair,nTrial);
+            show = location_perms(nTrial,:) == pair_perms(:,nPair,nTrial);
             hide = ~show(1,:); % logical vector - hide all the other locations
             
-            Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(cfg.exp.pair_perms(1,nPair,nTrial)).texture, [],...
-                cfg.stim.theImages(cfg.exp.pair_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
+            Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(pair_perms(1,nPair,nTrial)).texture, [],...
+                cfg.stim.theImages(pair_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
             
             
         case 1 % test phase random order
             
-            show = cfg.exp.location_perms(nTrial,:) == cfg.exp.test_perms(:,nPair,nTrial); % logical vector of which two stimuli are being tested (first row is stimuli shown)
+            show = location_perms(nTrial,:) == test_perms(:,nPair,nTrial); % logical vector of which two stimuli are being tested (first row is stimuli shown)
             hide = ~show(1,:); % logical vector - hide all the other locations
             
             % draw the test image
-            Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).texture, [],...
-                cfg.stim.theImages(cfg.exp.test_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
+            Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(test_perms(1,nPair,nTrial)).texture, [],...
+                cfg.stim.theImages(test_perms(1,nPair,nTrial)).scaled_rect(show(1,:),:), 0);
             
     end
     
@@ -123,4 +135,8 @@ for nPair = 1:cfg.exp.n_pairs
     end
     
 end
+
+% Wait time remaining after last pair
+WaitSecs(cfg.exp.time.response_speed - test.RT(nPair));
+
 end

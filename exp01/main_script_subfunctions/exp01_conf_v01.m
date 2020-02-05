@@ -15,12 +15,15 @@ function [conf] = exp01_conf_v01(cfg,type)
 
 switch type
     case 'flip'
-        question = cfg.ptb.instructions.conf_pre_flip;
+        question = cfg.ptb.instructions.conf;
     case 'test'
-        question = cfg.ptb.instructions.conf_pre_test;
+        question = cfg.ptb.instructions.conf;
+    case 'training1'
+        question = cfg.ptb.instructions.conf_training1;
+    case 'training2'
+        question = cfg.ptb.instructions.conf_training2;
 end
 
-question = cfg.ptb.instructions.conf;
 
 conf = Likert_v02(cfg.ptb.PTBwindow, cfg.ptb.conf.text_colour, question,...
     cfg.ptb.conf.label(1), cfg.ptb.conf.label(3), cfg.ptb.conf.confirmcolor,...

@@ -1,4 +1,4 @@
-function [rec] = display_feedback_v01(cfg, trial, nTrial)
+function [rec] = exp01_display_feedback_v01(cfg, trial, nTrial)
 %
 % This function displays the feedback following a test
 % The participant is shown which pairs they got correct/incorrect
@@ -6,13 +6,16 @@ function [rec] = display_feedback_v01(cfg, trial, nTrial)
 % Author:   William Hopper
 % Original: 03/02/2020
 
-% % which ones did they get right?
-% correct_idx = trial.test.response(:,2) ~= 0;
-% incorrect_idx = ~correct_idx;
-%
-% % what are the grid locations on this trial?
-% correct = cfg.exp.location_perms(nTrial,cfg.exp.pair_perms(:,correct_idx,nTrial));
-% incorrect = cfg.exp.location_perms(nTrial,cfg.exp.pair_perms(:,incorrect_idx,nTrial));
+switch trial.type
+    case 'training'
+        location_perms = cfg.exp.train.location_perms;
+        pair_perms     = cfg.exp.train.pair_perms;
+        test_perms     = cfg.exp.train.test_perms;
+    case 'main'
+        location_perms = cfg.exp.location_perms;
+        pair_perms     = cfg.exp.pair_perms;
+        test_perms     = cfg.exp.test_perms;
+end
 
 % display score out of n_pairs
 trial_score = num2str(sum(trial.test.response(:,2)));
@@ -35,7 +38,7 @@ correct = repelem(trial.test.response(:,2),2,1);
 for k = 1:cfg.exp.n_stim
     
     Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).texture, [],...
-        cfg.stim.theImages(k).scaled_rect(cfg.exp.location_perms(nTrial,:) == k,:), 0);
+        cfg.stim.theImages(k).scaled_rect(location_perms(nTrial,:) == k,:), 0);
     
     flip = ~mod(k,2);
     
@@ -45,7 +48,7 @@ for k = 1:cfg.exp.n_stim
         grid_colour = [255 0 0];
     end
     
-    Screen('FrameRect', cfg.ptb.PTBwindow, grid_colour, cfg.ptb.grid(:,cfg.exp.location_perms(nTrial,:) == k), 10)
+    Screen('FrameRect', cfg.ptb.PTBwindow, grid_colour, cfg.ptb.grid(:,location_perms(nTrial,:) == k), 10)
     
     if flip % flip to screen every pair and don't clear the buffer
         Screen('Flip', cfg.ptb.PTBwindow, 0, 1);
