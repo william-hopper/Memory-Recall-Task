@@ -40,14 +40,14 @@ cfg.exp.random                     = 0;         % randomise test order?
 cfg.exp.train.trials               = 4;         % number of training trials
 cfg.exp.train.flips                = [4 2 4 2]; % number of flips for each training trial
 
-cfg.exp.n_trials                   = 10;                % number of trials
+cfg.exp.n_trials                   = 4;                % number of trials
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
-cfg.exp.time.flip_speed            = 1;         % number of seconds between flips
+cfg.exp.time.flip_speed            = 0.75;         % number of seconds between flips
 cfg.exp.time.response_speed        = 3;         % number of seconds for participant response
-cfg.exp.time.cnf_time              = 3;         % number of seconds for confidence response
+cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
 
 cfg.exp.time.trial_num             = 1.5;         % how long should ready be shown at the beginning of each trial?
 cfg.exp.time.test_rewatch          = 5;         % how long do participants have to decide to rewatch stimuli?
@@ -197,7 +197,8 @@ for k = 1:cfg.exp.n_stim
     
     
 end
-% Instructions parameters
+
+%% Instructions parameters
 load([cfg.path.stim 'task_text.mat'], 'task_text');
 cfg.ptb.instructions = task_text;
 
@@ -227,58 +228,21 @@ cfg.ptb.conf.numcolors = [255 255 255];
 %% Instructions
 % =========================================================================
 if cfg.do.instructions
-    
-    InInstructions = 1;
-    menu = 1;
-    while InInstructions
-        switch menu
-            case 1
-                % Description of the task
-                Screen('TextSize', window, cfg.ptb.text.size);
-                wrap = ceil(length(TaskInst.inst1)/n_lines); % number of characters to wrap at for four lines
-                DrawFormattedText(window,'In this task, you will be present with a grid containing' , 'center','center', [0 0 0],wrap,[],[],inst_line_spacing);
-                DrawFormattedText(window,TaskInst.arrows, 'center', screenYpixels*0.8, [0 0 0], wrap,[],[],inst_line_spacing);
-                
-                % draw arrows
-                Screen('DrawLines', window, RightArrow_inst, 5, [0 0 0])
-                
-                % flip
-                Screen('Flip', window);
-                
-                % Next menu
-                [secs, keyCode] = KbStrokeWait;
-                if keyCode(right)
-                    menu = 2;
-                elseif keyCode(escape)
-                    break;
-                end
-                
-            case 2
-                % Description of the task
-                Screen('TextSize', window, inst_font_size);
-                wrap = ceil(length(TaskInst.inst2)/n_lines); % number of characters to wrap at for four lines
-                DrawFormattedText(window,TaskInst.inst2, 'center','center', [0 0 0],wrap,[],[],inst_line_spacing);
-                
-                % draw arrows
-                Screen('DrawLines', window, Arrows_inst, 5, [0 0 0])
-                
-                % flip
-                Screen('Flip', window);
-                
-                % Next menu
-                [secs, keyCode] = KbStrokeWait;
-                if keyCode(right)
-                    menu = 3;
-                elseif keyCode(left)
-                    menu = 1;
-                elseif keyCode(escape)
-                    break;
-                end
-                
-                
-        end
+    %General instructions : purpose of the experiment, incentives, time-lapse,
+    %cursor, training
+    for i = 1:31
+        pic = Screen('MakeTexture', cfg.ptb.PTBwindow, stimuli.instructions{i});
+        rect = CenterRectOnPoint(Screen('Rect',pic), cfg.ptb.xCenter, cfg.ptb.yCenter);
+        Screen('DrawTexture', cfg.ptb.PTBwindow, pic, [], rect);
+        Screen('Flip', cfg.ptb.PTBwindow);
+        WaitSecs(0.1);
+        waitBoutonJaune;
+        Screen('Flip', cfg.ptb.PTBwindow);
+        WaitSecs(0.1);
     end
-end
+end  % if instructions
+
+
 %% Training
 % =========================================================================
 if cfg.do.training
@@ -309,6 +273,8 @@ if cfg.do.training
     
     cfg.exp.train.test_perms = generate_test_perms_v01(cfg, train_or_main);
     
+    
+    %% training
     training = cell(1, cfg.exp.train.trials);
     
     for nTrain = 1:cfg.exp.train.trials
@@ -357,6 +323,7 @@ if cfg.do.main_experiment
     cfg.exp.test_perms = generate_test_perms_v01(cfg, train_or_main);
     
     
+    %% main
     rec = cell(1, cfg.exp.n_trials);
     
     for nTrial = 1:cfg.exp.n_trials

@@ -78,8 +78,6 @@ for nPair = 1:cfg.exp.n_pairs
     % draw the grid!
     Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
     
-    HideCursor();
-    ShowCursor('CrossHair');
     % flip
     [~, T] = Screen('Flip', cfg.ptb.PTBwindow, T + cfg.exp.time.response_speed);
     
