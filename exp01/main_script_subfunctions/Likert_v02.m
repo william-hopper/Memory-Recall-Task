@@ -163,7 +163,7 @@ if numcolor ~= -1
         if i ~= numchoices
             WriteCentered(window, num2str(i), numX, numY, numcolor);
         else
-            WriteCentered(window, [num2str(i) '+'], numX, numY, numcolor);
+            WriteCentered(window, num2str(i), numX, numY, numcolor);
         end
     end
 end

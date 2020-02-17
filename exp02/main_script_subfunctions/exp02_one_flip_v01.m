@@ -9,29 +9,46 @@ function [flip] = exp02_one_flip_v01(cfg, nTrial, trial)
 % flip.scriptname = mfilename('fullpath');  % save the name of this script
 
 
+% Difficulty - for now just alternate
+if length(cfg.exp.n_stim) > 1
+    difficulty = ~mod(nTrial, 2); % 0 on odd trials/1 on even trials
+    switch difficulty
+        case 0
+            Diff = 1;
+        case 1
+            Diff = 2;
+    end
+    
+else
+    Diff = 1;
+end
+
+% trial counter
+trial_c = repelem(1:cfg.exp.n_trials/length(cfg.exp.n_pairs), 2);
+
 % trial type changes location perms!
 switch trial.type
     case 'training'
-        location_perms = cfg.exp.train.location_perms;
-        pair_perms     = cfg.exp.train.pair_perms;
+        location_perms = cfg.exp.train(Diff).location_perms;
+        pair_perms     = cfg.exp.train(Diff).pair_perms;
     case 'main'
-        location_perms = cfg.exp.location_perms;
-        pair_perms     = cfg.exp.pair_perms;
+        location_perms = cfg.exp.main(Diff).location_perms;
+        pair_perms     = cfg.exp.main(Diff).pair_perms;
 end
 
 % mask all the locations
-Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect);
+Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,:,Diff));
 
 % draw the grid!
-Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
+Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.coords(Diff).grid);
 
 % flip
 [~, T] = Screen('Flip', cfg.ptb.PTBwindow);
 
-for nFlip = 1:cfg.exp.n_pairs
+for nFlip = 1:cfg.exp.n_pairs(Diff)
     
     % which pair to show
-    show = location_perms(nTrial,:) == pair_perms(:,nFlip,nTrial); % logical vector of which two stimuli to show
+    show = location_perms(trial_c(nTrial),:) == pair_perms(:,nFlip,trial_c(nTrial)); % logical vector of which two stimuli to show
     hide = ~or(show(1,:),show(2,:)); % logical vector of ~show i.e. all the ones to hide
     
     %% draw the image
@@ -42,16 +59,16 @@ for nFlip = 1:cfg.exp.n_pairs
     % cfg.stim.theImages(pair_perms(:,nFlip)).scaled_rect(show(:,:),:)
     % - show indexes the spatial location of the image - there is a
     % scaled_rect for each grid location for each image
-    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(pair_perms(1,nFlip,nTrial)).texture, [],...
-        cfg.stim.theImages(pair_perms(1,nFlip,nTrial)).scaled_rect(show(1,:),:), 0);
-    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(pair_perms(2,nFlip,nTrial)).texture, [],...
-        cfg.stim.theImages(pair_perms(2,nFlip,nTrial)).scaled_rect(show(2,:),:), 0);
+    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(pair_perms(1,nFlip,trial_c(nTrial))).texture(Diff), [],...
+        cfg.stim.theImages(pair_perms(1,nFlip,trial_c(nTrial))).scaled_rect(show(1,:),:,Diff), 0);
+    Screen('DrawTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(pair_perms(2,nFlip,trial_c(nTrial))).texture(Diff), [],...
+        cfg.stim.theImages(pair_perms(2,nFlip,trial_c(nTrial))).scaled_rect(show(2,:),:,Diff), 0);
     
     % mask all the other locations
-    Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide));
+    Screen('FillRect', cfg.ptb.PTBwindow, 0.5, cfg.stim.mask.rect(:,hide,Diff));
     
     % draw the grid!
-    Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
+    Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.coords(Diff).grid);
     
     
     % flip at flip speed

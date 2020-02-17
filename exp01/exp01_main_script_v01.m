@@ -45,7 +45,7 @@ cfg.exp.baseline_reimbursement     = 15;               % how much money we promi
 cfg.exp.n_stim                     = 16;               % how many individual stimuli
 cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
 
-cfg.exp.time.flip_speed            = 0.75;         % number of seconds between flips
+cfg.exp.time.flip_speed            = 0.75;      % number of seconds between flips
 cfg.exp.time.response_speed        = 3;         % number of seconds for participant response
 cfg.exp.time.cnf_time              = 5;         % number of seconds for confidence response
 
@@ -218,7 +218,7 @@ Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
 
 % Pre-flip confidence response parameters
 cfg.ptb.conf.text_colour = [1 1 1];
-cfg.ptb.conf.numchoices = 9;
+cfg.ptb.conf.numchoices = 8;
 cfg.ptb.conf.label = ['1' '5' '8'];
 cfg.ptb.conf.label = [' ' ' ' ' '];
 cfg.ptb.conf.confirmcolor = [255 255 0];

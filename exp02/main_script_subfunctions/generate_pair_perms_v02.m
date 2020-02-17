@@ -1,4 +1,4 @@
-function [pair_perms] = generate_pair_perms_v01(cfg, train_or_main)
+function [pair_perms] = generate_pair_perms_v02(cfg, train_or_main, i)
 %
 % This function generates nTrial sets of nStim/2 pairs of stimuli
 %
@@ -7,15 +7,15 @@ function [pair_perms] = generate_pair_perms_v01(cfg, train_or_main)
 
 switch train_or_main
     case 'training'
-        n_trials = cfg.exp.train.trials;
+        n_trials = cfg.exp.train.trials/length(cfg.exp.n_stim);
     case 'main'
-        n_trials = cfg.exp.n_trials;
+        n_trials = cfg.exp.n_trials/length(cfg.exp.n_stim);
 end
 
 % pre-allocate
-pair_perms = zeros(2, cfg.exp.n_pairs, n_trials);
+pair_perms = zeros(2, cfg.exp.n_pairs(i), n_trials);
 
-switch cfg.exp.n_stim
+switch cfg.exp.n_stim(i)
     case 12
         a = [1 3 5 7 9  11;...
              2 4 6 8 10 12];
@@ -37,7 +37,7 @@ for nTrial = 1:n_trials
             % pair_perms(1,2,nTrial) + pair_perms(2,2,nTrial) = second pair etc..
             %     pair_perms(:,:,nTrial) = reshape(randperm(cfg.exp.n_stim), 2, cfg.exp.n_pairs);
             
-            pair_perms(:,:,nTrial) = a(:,randperm(cfg.exp.n_pairs));
+            pair_perms(:,:,nTrial) = a(:,randperm(cfg.exp.n_pairs(i)));
     end
     
 end

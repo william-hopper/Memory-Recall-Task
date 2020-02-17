@@ -179,7 +179,7 @@ end
 %% Checking number of screens and parsing size of the global screen
 screens       = Screen('Screens');
 if length(screens) > 1 % Checks for the number of screens
-    screenNum        = max(screens);
+    screenNum        = 1;
 else
     screenNum        = 0;
 end
@@ -206,13 +206,13 @@ else
     textBounds = [Screen('TextBounds', screenPointer, sprintf(anchors{1})); Screen('TextBounds', screenPointer, sprintf(anchors{3}))];
 end
 
-if drawImage == 1
-    rectImage  = [center(1) - imageSize(2)/2 rect(4)*(scalaPosition - 0.2) - imageSize(1) center(1) + imageSize(2)/2 rect(4)*(scalaPosition - 0.2)];
-    if rect(4)*(scalaPosition - 0.2) - imageSize(1) < 0
-        error('The height of the image is too large. Either lower your scale or use the smaller image.');
-    end
-end
-
+% if drawImage == 1
+%     rectImage  = [center(1) - imageSize(2)/2 rect(4)*(scalaPosition - 0.2) - imageSize(1) center(1) + imageSize(2)/2 rect(4)*(scalaPosition - 0.2)];
+%     if rect(4)*(scalaPosition - 0.2) - imageSize(1) < 0
+%         error('The height of the image is too large. Either lower your scale or use the smaller image.');
+%     end
+% end
+rectImage = rect;
 % Calculate the range of the scale, which will be need to calculate the
 % position
 scaleRange        = round(rect(3)*(1-scalaLength)):round(rect(3)*scalaLength); % Calculates the range of the scale

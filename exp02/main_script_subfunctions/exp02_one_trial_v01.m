@@ -47,4 +47,11 @@ trial.test = exp02_test_v01(cfg, nTrial, trial);
 %% Confidence Judgement
 % ========================================================================
 
+% rect = [0 cfg.ptb.screenYpixels*0.8 cfg.ptb.screenXpixels cfg.ptb.screenYpixels];
+
+trial.conf = exp02_conf_v01(cfg);
+
+
+
+
 end

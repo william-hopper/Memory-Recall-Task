@@ -19,7 +19,7 @@ clear all; close all; clc; rng('Shuffle'); clear mex;
 %% What to do
 % =========================================================================
 
-cfg.do.debug                       = 1;         % should we run in debug mode?
+cfg.do.debug                       = 0;         % should we run in debug mode?
 cfg.do.cheat                       = 0;         % do we want to cheat?
 
 cfg.do.instructions                = 0;         % do we want instructions?
@@ -37,19 +37,21 @@ else
 end
 
 cfg.exp.random = 0;
-
-cfg.exp.train.trials               = 4;         % number of training trials
-
 cfg.exp.baseline_reimbursement     = 15;               % how much money we promise as a baseline
-cfg.exp.n_stim                     = 12;               % how many individual stimuli
-cfg.exp.n_pairs                    = cfg.exp.n_stim/2; % how many associations to learn
-cfg.exp.n_trials                   = 24;               % number of trials (must be a multiple of n_pairs)
 
+cfg.exp.n_stim                     = [16];          % how many individual stimuli
+
+for i = 1:length(cfg.exp.n_stim)
+    cfg.exp.n_pairs(i)             = cfg.exp.n_stim(i)/2; % how many associations to learn
+end
+        
+cfg.exp.n_trials                   = 48;               % number of trials (must be a multiple of n_pairs)
+cfg.exp.train.trials               = 4;                % number of training trials
 
 cfg.exp.time.flip_speed            = 0.75;             % number of seconds between flips
 cfg.exp.time.response_speed        = 1;                % number of seconds before test stimuli presented
 cfg.exp.time.cnf_time              = 5;                % number of seconds for confidence response
-cfg.exp.time.highlight             = 2;                % number of seconds response highlighted
+cfg.exp.time.highlight             = 0.5;                % number of seconds response highlighted
 cfg.exp.time.trial_num             = 1.5;              % how long should ready be shown at the beginning of each trial?
 cfg.exp.time.show_feedback         = 3;                % how long should the feedback be shown at end of the trial?
 
@@ -105,7 +107,7 @@ end
 
 Screen('Preference', 'SkipSyncTests', 1);
 Screen('Preference', 'VisualDebugLevel', 0);  % supress start screen
-% HideCursor;
+HideCursor;
 
 cfg.ptb.screens = Screen('Screens'); % open screen
 cfg.ptb.screenNumber = max(cfg.ptb.screens); % counter the number of max screens
@@ -113,6 +115,8 @@ cfg.ptb.white = WhiteIndex(cfg.ptb.screenNumber); % set up white
 cfg.ptb.black = BlackIndex(cfg.ptb.screenNumber); % set up black
 [cfg.ptb.PTBwindow, cfg.ptb.PTBwindowRect] = PsychImaging('Openwindow', cfg.ptb.screenNumber, cfg.ptb.black);
 Screen('BlendFunction', cfg.ptb.PTBwindow, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA'); % Set the blend funciton for the screen
+
+[cfg.ptb.PTBoffwindow, cfg.ptb.PTBoffwindowRect] = Screen('OpenoffscreenWindow', cfg.ptb.screenNumber, cfg.ptb.black);
 
 [cfg.ptb.xCentre, cfg.ptb.yCentre] = RectCenter(cfg.ptb.PTBwindowRect); % Get the centre coordinate of the window
 [cfg.ptb.screenXpixels, cfg.ptb.screenYpixels] = Screen('WindowSize', cfg.ptb.PTBwindow); % Get the center coordinate of the window in pixels
@@ -124,6 +128,9 @@ cfg.ptb.waitframes = 1; % set up waitframes
 cfg.ptb.yHigh                          = cfg.ptb.yCentre/2 ;
 cfg.ptb.yBottom                        = 9/5*cfg.ptb.yCentre;
 
+%% Grid coordinates
+% =======================================================================
+
 % pre-allocate coord/grid array (an array for each difficulty level
 % cfg.ptb.coord = zeros(2, cfg.exp.n_stim, 2);
 % cfg.ptb.grid = zeros(4, cfg.exp.n_stim, 2);
@@ -132,45 +139,53 @@ cfg.ptb.grid_dim(1) = 1.5; % 4 squares
 cfg.ptb.grid_dim(2) = 2.5; % 6 squares
 cfg.ptb.grid_dim(3) = 1;   % 3 squares
 
-% Coordinates of stimuli
-cfg.exp.numStim = round(sqrt(cfg.exp.n_stim));
-
-switch cfg.exp.n_stim
-    case 12
-        % (4x3)
-        [x, y] = meshgrid(-cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1), -cfg.ptb.grid_dim(3):1:cfg.ptb.grid_dim(3));
-        cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(3) * 2 + 2);
-        x = x .* cfg.ptb.pixelScale;
-        y = y .* cfg.ptb.pixelScale;
-        cfg.ptb.coord = [reshape(x', 1, cfg.exp.n_stim)+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim)+cfg.ptb.yCentre]; % coordinates of rectangle centre
-        cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)-round(cfg.ptb.pixelScale/2);...
-            cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)]; % pixel location of grid
-        cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
-        
-    case 16
-        % (4x4)
-        [x, y] = meshgrid(-cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1), -cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1));
-        cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(1) * 2 + 2);
-        x = x .* cfg.ptb.pixelScale;
-        y = y .* cfg.ptb.pixelScale;
-        cfg.ptb.coord = [reshape(x', 1, cfg.exp.n_stim)+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim)+cfg.ptb.yCentre]; % coordinates of rectangle centre
-        cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)-round(cfg.ptb.pixelScale/2);...
-            cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)]; % pixel location of grid
-        cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
-        
+for i = 1:length(cfg.exp.n_stim)
+    
+    switch cfg.exp.n_stim
+        case 12 % (4x3)
+            
+            [x, y] = meshgrid(-cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1), -cfg.ptb.grid_dim(3):1:cfg.ptb.grid_dim(3));
+            cfg.ptb.pixelScale(i) = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(1) * 2 + 2);
+            x = x .* cfg.ptb.pixelScale(i);
+            y = y .* cfg.ptb.pixelScale(i);
+            coord = [reshape(x', 1, cfg.exp.n_stim(i))+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim(i))+cfg.ptb.yCentre]; % coordinates of rectangle centre
+            cfg.ptb.coords(i).grid = [coord(1,:)-round(cfg.ptb.pixelScale(i)/2);coord(2,:)-round(cfg.ptb.pixelScale(i)/2);...
+                coord(1,:)+round(cfg.ptb.pixelScale(i)/2);coord(2,:)+round(cfg.ptb.pixelScale(i)/2)]; % pixel location of grid
+            cfg.stim.mask.base_rect(i,:) = [0 0 cfg.ptb.pixelScale(i) cfg.ptb.pixelScale(i)] * 0.9;
+            
+            cfg.ptb.coords(i).coord = coord;
+            
+        case 16 % (4x4)
+            
+            [x, y] = meshgrid(-cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1), -cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1));
+            cfg.ptb.pixelScale(i) = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(1) * 2 + 2);
+            x = x .* cfg.ptb.pixelScale(i);
+            y = y .* cfg.ptb.pixelScale(i);
+            coord = [reshape(x', 1, cfg.exp.n_stim(i))+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim(i))+cfg.ptb.yCentre]; % coordinates of rectangle centre
+            cfg.ptb.coords(i).grid = [coord(1,:)-round(cfg.ptb.pixelScale(i)/2);coord(2,:)-round(cfg.ptb.pixelScale(i)/2);...
+                coord(1,:)+round(cfg.ptb.pixelScale(i)/2);coord(2,:)+round(cfg.ptb.pixelScale(i)/2)]; % pixel location of grid
+            cfg.stim.mask.base_rect(i,:) = [0 0 cfg.ptb.pixelScale(i) cfg.ptb.pixelScale(i)] * 0.9;
+            
+            cfg.ptb.coords(i).coord = coord;
+            
+        case 24 % (6x4)
+            
+            [x, y] = meshgrid(-cfg.ptb.grid_dim(2):1:cfg.ptb.grid_dim(2), -cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1));
+            cfg.ptb.pixelScale(i) = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(2) * 2 + 2);
+            x = x .* cfg.ptb.pixelScale(i);
+            y = y .* cfg.ptb.pixelScale(i);
+            coord = [reshape(x', 1, cfg.exp.n_stim(i))+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim(i))+cfg.ptb.yCentre]; % coordinates of rectangle centre
+            cfg.ptb.coords(i).grid = [coord(1,:)-round(cfg.ptb.pixelScale(i)/2);coord(2,:)-round(cfg.ptb.pixelScale(i)/2);...
+                coord(1,:)+round(cfg.ptb.pixelScale(i)/2);coord(2,:)+round(cfg.ptb.pixelScale(i)/2)]; % pixel location of grid
+            cfg.stim.mask.base_rect(i,:) = [0 0 cfg.ptb.pixelScale(i) cfg.ptb.pixelScale(i)] * 0.9;
+            
+            cfg.ptb.coords(i).coord = coord;
+            
+    end
 end
-% (6x4)
-% [x, y] = meshgrid(-cfg.ptb.grid_dim(2):1:cfg.ptb.grid_dim(2), -cfg.ptb.grid_dim(1):1:cfg.ptb.grid_dim(1));
-% cfg.ptb.pixelScale = min(cfg.ptb.screenXpixels, cfg.ptb.screenYpixels) / (cfg.ptb.grid_dim(1) * 2 + 2);
-% x = x .* cfg.ptb.pixelScale;
-% y = y .* cfg.ptb.pixelScale;
-% cfg.ptb.coord = [reshape(x', 1, cfg.exp.n_stim)+cfg.ptb.xCentre; reshape(y', 1, cfg.exp.n_stim)+cfg.ptb.yCentre]; % coordinates of rectangle centre
-% cfg.ptb.grid = [cfg.ptb.coord(1,:)-round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)-round(cfg.ptb.pixelScale/2);...
-%     cfg.ptb.coord(1,:)+round(cfg.ptb.pixelScale/2);cfg.ptb.coord(2,:)+round(cfg.ptb.pixelScale/2)]; % pixel location of grid
-% cfg.stim.mask.base_rect = [0 0 cfg.ptb.pixelScale cfg.ptb.pixelScale] * 0.9;
 
-
-% Load Images
+%% Load Images
+% =======================================================================
 % Check to make sure that folder actually exists.  Warn user if it doesn't.
 if ~isdir(cfg.path.images)
     errorMessage = sprintf('Error: The following folder does not exist:\n%s', cfg.path.images);
@@ -181,7 +196,8 @@ end
 % Get a list of all files in the folder with the desired file name pattern.
 filePattern = fullfile(cfg.path.images, '*.jfif'); % Change to whatever pattern you need.
 cfg.stim.theImages = dir(filePattern);
-for k = 1:cfg.exp.n_stim
+
+for k = 1:max(cfg.exp.n_stim)
     
     baseFileName = cfg.stim.theImages(k).name;
     fullFileName = fullfile(cfg.path.images, baseFileName);
@@ -191,28 +207,38 @@ for k = 1:cfg.exp.n_stim
     % for the grid
     cfg.stim.theImages(k).org_size = size(cfg.stim.theImages(k).array); % original size of image
     cfg.stim.theImages(k).asp_rat =  min(cfg.stim.theImages(k).org_size(1:2))/max(cfg.stim.theImages(k).org_size(1:2));
-    cfg.stim.theImages(k).adj_size(2) = cfg.ptb.pixelScale*0.9; % scale the image (height)
-    cfg.stim.theImages(k).adj_size(1) = cfg.stim.theImages(k).adj_size(2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
-    cfg.stim.theImages(k).texture = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
     
-    % rescale image to grid
-    cfg.stim.theImages(k).img_rect = [0 0 cfg.stim.theImages(k).adj_size(1) cfg.stim.theImages(k).adj_size(1)];
+    % some pre-allocation
+    cfg.stim.theImages(k).scaled_rect = zeros(max(cfg.exp.n_stim),4,length(cfg.exp.n_stim));
+    cfg.stim.mask.rect                = zeros(4,max(cfg.exp.n_stim),length(cfg.exp.n_stim));
     
-    % generate an image rectangle for each grid location
-    for nGrid = 1:cfg.exp.n_stim
+    for i = 1:length(cfg.exp.n_stim) % create textures for each difficult level!
         
-        cfg.stim.theImages(k).scaled_rect(nGrid,:) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect, cfg.ptb.coord(1,nGrid), cfg.ptb.coord(2,nGrid));
+        cfg.stim.theImages(k).adj_size(i,2) = cfg.ptb.pixelScale(i)*0.9; % scale the image (height)
+        cfg.stim.theImages(k).adj_size(i,1) = cfg.stim.theImages(k).adj_size(i,2)*cfg.stim.theImages(k).asp_rat; % scale the image (width)
+        cfg.stim.theImages(k).texture(i) = Screen('MakeTexture', cfg.ptb.PTBwindow, cfg.stim.theImages(k).array); % generate image textures
+        
+        % rescale image to grid
+        cfg.stim.theImages(k).img_rect(i,:) = [0 0 cfg.stim.theImages(k).adj_size(i,1) cfg.stim.theImages(k).adj_size(i,1)];
+        
+        % generate an image rectangle for each grid location
+        for nGrid = 1:cfg.exp.n_stim(i)
+            
+            cfg.stim.theImages(k).scaled_rect(nGrid,:,i) = CenterRectOnPointd(cfg.stim.theImages(k).img_rect(i,:), cfg.ptb.coords(i).coord(1,nGrid), cfg.ptb.coords(i).coord(2,nGrid));
+            
+            % create mask rectangles
+            cfg.stim.mask.rect(:,nGrid,i) = CenterRectOnPointd(cfg.stim.mask.base_rect(i,:), cfg.ptb.coords(i).coord(1,nGrid), cfg.ptb.coords(i).coord(2,nGrid));
+            
+            
+        end
+        
+        
         
     end
-    
-    % create mask rectangles
-    cfg.stim.mask.rect(:,k) = CenterRectOnPointd(cfg.stim.mask.base_rect, cfg.ptb.coord(1,k), cfg.ptb.coord(2,k));
-    
-    
 end
 
-
 %% Instructions parameters
+% =======================================================================
 load([cfg.path.stim 'task_text.mat'], 'task_text');
 cfg.ptb.instructions = task_text;
 
@@ -230,13 +256,22 @@ cfg.ptb.text.vSpacing                  = 3;
 Screen('TextSize', cfg.ptb.PTBwindow, cfg.ptb.text.size);
 
 
-% Confidence response parameters
-cfg.ptb.conf.text_colour = [1 1 1];
-cfg.ptb.conf.numchoices = 9;
-cfg.ptb.conf.label = ['1' '5' '8'];
-cfg.ptb.conf.label = [' ' ' ' ' '];
-cfg.ptb.conf.confirmcolor = [255 255 0];
-cfg.ptb.conf.numcolors = [255 255 255];
+% Confidence response parameters - exp02 doesn't use Likert Function,
+% slideScale instead
+cfg.ptb.conf.question = 'How confident are you in your guess?';
+cfg.ptb.conf.endpoints = {'Not at all', 'Certain'};
+cfg.ptb.conf.range = 2; % 0 - 100
+cfg.ptb.conf.startposition = 'center';
+cfg.ptb.conf.scalalength = 0.9;
+cfg.ptb.conf.scalaposition = 0.9;
+cfg.ptb.conf.device = 'mouse';
+cfg.ptb.conf.slidercolor = [255 0 0]; % red
+cfg.ptb.conf.scalacolor = [255 255 255]; % white
+cfg.ptb.conf.displayposition = true;
+
+% Cursor parameters
+cfg.ptb.dot.size = 10;
+cfg.ptb.dot.colour = [255 0 0];
 
 
 %% Instructions
@@ -267,9 +302,9 @@ if cfg.do.training
     % value refers to the image number from stimuli/images
     % row 1 & 2 of column i are a pair
     % =========================================================================
-    
-    cfg.exp.train.pair_perms = generate_pair_perms_v01(cfg, train_or_main);
-    
+    for i = 1:length(cfg.exp.n_stim)
+        cfg.exp.train(i).pair_perms = generate_pair_perms_v01(cfg, train_or_main, i);
+    end
     %% Generate permutations image locations
     % 1:n_stim -> grid read left to right, top to bottom
     % EXAMPLE WITH A 4x4 GRID:
@@ -277,17 +312,18 @@ if cfg.do.training
     % corner -- value of location_perms refers to which image i.e. if
     % location_perms(4) = 8 then image 8 will be shown in the top right corner
     % =========================================================================
-    
-    cfg.exp.train.location_perms = generate_location_perms_v01(cfg, train_or_main);
-    
+    for i = 1:length(cfg.exp.n_stim)
+        cfg.exp.train(i).location_perms = generate_location_perms_v01(cfg, train_or_main, i);
+    end
     %% Generate order of images tested
     % as with pair_perms (:,1) is first pair, (:,2) is second pair etc...
     % function shuffles pairs for testing
     % =========================================================================
+    for i = 1:length(cfg.exp.n_stim)
+        cfg.exp.train(i).test_perms = generate_test_perms_v02(cfg, train_or_main, i);
+    end
     
-    cfg.exp.train.test_perms = generate_test_perms_v02(cfg, train_or_main);
-    
-    %% training
+    %% training ===========================================================
     training = cell(1, cfg.exp.train.trials);
     
     for nTrain = 1:cfg.exp.train.trials
@@ -313,9 +349,11 @@ if cfg.do.main_experiment
     % value refers to the image number from stimuli/images
     % row 1 & 2 of column i are a pair
     % =========================================================================
-    
-    cfg.exp.pair_perms = generate_pair_perms_v01(cfg, train_or_main);
-    
+    for i = 1:length(cfg.exp.n_stim)
+        cfg.exp.main(i).pair_perms = generate_pair_perms_v02(cfg, train_or_main, i);
+    end
+   
+
     %% Generate permutations image locations
     % 1:n_stim -> grid read left to right, top to bottom
     % EXAMPLE WITH A 4x4 GRID:
@@ -323,18 +361,21 @@ if cfg.do.main_experiment
     % corner -- value of location_perms refers to which image i.e. if
     % location_perms(4) = 8 then image 8 will be shown in the top right corner
     % =========================================================================
-    
-    cfg.exp.location_perms = generate_location_perms_v01(cfg, train_or_main);
-    
+    for i = 1:length(cfg.exp.n_stim)
+       cfg.exp.main(i).location_perms = generate_location_perms_v02(cfg, train_or_main, i);
+    end
+
+
     %% Generate order of images tested
     % as with pair_perms (:,1) is first pair, (:,2) is second pair etc...
     % function shuffles pairs for testing
     % =========================================================================
+    for i = 1:length(cfg.exp.n_stim)
+        cfg.exp.main(i).test_perms = generate_test_perms_v02(cfg, train_or_main, i);
+    end
+
     
-    cfg.exp.test_perms = generate_test_perms_v02(cfg, train_or_main);
-    
-    
-    %% main
+    %% main ===============================================================
     rec = cell(1, cfg.exp.n_trials);
     
     for nTrial = 1:cfg.exp.n_trials
@@ -346,7 +387,7 @@ if cfg.do.main_experiment
     
     % save!
     savewhere = [cfg.path.main_exp 'main_exp_' cfg.fname];
-    save(savewhere, 'cfg', 'rec');  % save training
+    save(savewhere, 'cfg', 'rec');  % save main
     
 end
 %%

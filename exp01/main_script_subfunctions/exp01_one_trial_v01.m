@@ -34,15 +34,24 @@ Screen('Flip', cfg.ptb.PTBwindow);
 
 WaitSecs(cfg.exp.time.trial_num);
 
-%% ask initial confidence before seeing stimuli
-% =======================================================================
-
-trial.conf.conf_pre_flip = exp01_conf_v01(cfg, 'flip');
-
 %% show one flip of stimuli
 % =======================================================================
 
 trial.show.flip_counter = 1; % initialise flip number
+
+exp01_one_flip_v01(cfg, nTrial, trial);
+
+
+
+%% ask initial confidence after seeing once
+% =======================================================================
+
+trial.conf.conf_SE(1,:) = exp01_conf_v01(cfg, 'flip');
+trial.conf.conf_SE(2,:) = exp01_conf_v01(cfg, 'SE');
+
+%% show one flip of stimuli
+% =======================================================================
+
 nottest = 1;
 while nottest
     

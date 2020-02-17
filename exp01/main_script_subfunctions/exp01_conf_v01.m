@@ -15,9 +15,11 @@ function [conf] = exp01_conf_v01(cfg,type)
 
 switch type
     case 'flip'
-        question = cfg.ptb.instructions.conf;
+        question = cfg.ptb.instructions.conf_pre_flip;
+    case 'SE'
+        question = cfg.ptb.instructions.conf_SE;
     case 'test'
-        question = cfg.ptb.instructions.conf;
+        question = cfg.ptb.instructions.conf_pre_test;
     case 'training1'
         question = cfg.ptb.instructions.conf_training1;
     case 'training2'
