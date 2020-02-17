@@ -110,7 +110,7 @@ while ~click
                     mY > cfg.ptb.coords(Diff).grid(2,i) &&...
                     mY < cfg.ptb.coords(Diff).grid(4,i)
                 
-                % dispplay image of test window to onscreen
+                % display image of test window to onscreen
                 Screen('CopyWindow', cfg.ptb.PTBoffwindow, cfg.ptb.PTBwindow);
                 
                 Screen('FrameRect', cfg.ptb.PTBwindow, [255, 255, 0],...

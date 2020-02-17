@@ -78,6 +78,9 @@ for nPair = 1:cfg.exp.n_pairs
     % draw the grid!
     Screen('FrameRect', cfg.ptb.PTBwindow, cfg.ptb.white, cfg.ptb.grid);
     
+    % Store image on offscreen window
+    Screen('CopyWindow', cfg.ptb.PTBwindow, cfg.ptb.PTBoffwindow);
+    
     % flip
     [~, T] = Screen('Flip', cfg.ptb.PTBwindow, T + cfg.exp.time.response_speed);
     
@@ -85,8 +88,15 @@ for nPair = 1:cfg.exp.n_pairs
     % while within response window
     while GetSecs() <= (T + cfg.exp.time.response_speed) && test.response(nPair,1) == 0
         
+        % copy image of test window to onscreen
+        Screen('CopyWindow', cfg.ptb.PTBoffwindow, cfg.ptb.PTBwindow);
+        
         % get mouse positions
         [mX, mY, buttons] = GetMouse(cfg.ptb.PTBwindow);
+        
+        % Draw a dot at the mouse location
+        Screen('DrawDots', cfg.ptb.PTBwindow, [mX, mY], cfg.ptb.dot.size, cfg.ptb.dot.colour, [], 1);
+        Screen('Flip', cfg.ptb.PTBwindow);
         
         
         % if the mX,mY coordinates are within the correct grid location
@@ -107,11 +117,16 @@ for nPair = 1:cfg.exp.n_pairs
             test.cor_grid(show(1,:)) = true;
             test.cor_grid(show(2,:)) = true;
             
+            % copy image of test window to onscreen
+            Screen('CopyWindow', cfg.ptb.PTBoffwindow, cfg.ptb.PTBwindow);
+            
             % wait for buttons to be released
             while any(buttons)
                 [~, ~, buttons] = GetMouse(cfg.ptb.PTBwindow);
                 WaitSecs(0.001);
             end
+            
+            
             
             % else
         elseif buttons(1)
@@ -123,6 +138,9 @@ for nPair = 1:cfg.exp.n_pairs
             test.response(nPair,1) = 1;
             test.response(nPair,2) = 0;
             
+            % copy image of test window to onscreen
+            Screen('CopyWindow', cfg.ptb.PTBoffwindow, cfg.ptb.PTBwindow);
+            
             % wait for buttons to be released
             while any(buttons)
                 [~, ~, buttons] = GetMouse(cfg.ptb.PTBwindow);
@@ -132,6 +150,8 @@ for nPair = 1:cfg.exp.n_pairs
         end
         
     end
+    
+    Screen('Flip', cfg.ptb.PTBwindow);
     
 end
 

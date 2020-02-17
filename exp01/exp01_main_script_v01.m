@@ -105,7 +105,7 @@ if cfg.do.debug
     PsychDebugWindowConfiguration(1);  % added for the testing phase
 end
 
-Screen('Preference', 'SkipSyncTests', 1);
+% Screen('Preference', 'SkipSyncTests', 1);
 Screen('Preference', 'VisualDebugLevel', 0);  % supress start screen
 % HideCursor;
 
@@ -115,6 +115,8 @@ cfg.ptb.white = WhiteIndex(cfg.ptb.screenNumber); % set up white
 cfg.ptb.black = BlackIndex(cfg.ptb.screenNumber); % set up black
 [cfg.ptb.PTBwindow, cfg.ptb.PTBwindowRect] = PsychImaging('Openwindow', cfg.ptb.screenNumber, cfg.ptb.black);
 Screen('BlendFunction', cfg.ptb.PTBwindow, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA'); % Set the blend funciton for the screen
+
+[cfg.ptb.PTBoffwindow, cfg.ptb.PTBoffwindowRect] = Screen('OpenoffscreenWindow', cfg.ptb.screenNumber, cfg.ptb.black);
 
 [cfg.ptb.xCentre, cfg.ptb.yCentre] = RectCenter(cfg.ptb.PTBwindowRect); % Get the centre coordinate of the window
 [cfg.ptb.screenXpixels, cfg.ptb.screenYpixels] = Screen('WindowSize', cfg.ptb.PTBwindow); % Get the center coordinate of the window in pixels
@@ -223,6 +225,10 @@ cfg.ptb.conf.label = ['1' '5' '8'];
 cfg.ptb.conf.label = [' ' ' ' ' '];
 cfg.ptb.conf.confirmcolor = [255 255 0];
 cfg.ptb.conf.numcolors = [255 255 255];
+
+% Cursor parameters
+cfg.ptb.dot.size = 10;
+cfg.ptb.dot.colour = [255 0 0];
 
 
 %% Instructions
