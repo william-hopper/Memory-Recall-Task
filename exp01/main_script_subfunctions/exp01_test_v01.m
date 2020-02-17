@@ -151,6 +151,10 @@ for nPair = 1:cfg.exp.n_pairs
         
     end
     
+    % copy image of test window to onscreen
+    Screen('CopyWindow', cfg.ptb.PTBoffwindow, cfg.ptb.PTBwindow);
+    
+    % flip
     Screen('Flip', cfg.ptb.PTBwindow);
     
 end

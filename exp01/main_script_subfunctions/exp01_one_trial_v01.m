@@ -45,7 +45,7 @@ exp01_one_flip_v01(cfg, nTrial, trial);
 
 %% ask initial confidence after seeing once
 % =======================================================================
-
+ShowCursor();
 trial.conf.conf_SE(1,:) = exp01_conf_v01(cfg, 'flip');
 trial.conf.conf_SE(2,:) = exp01_conf_v01(cfg, 'SE');
 
@@ -88,7 +88,7 @@ trial.conf.conf_pre_test = exp01_conf_v01(cfg, 'test');
 %% testing
 % =======================================================================
 
-
+HideCursor()
 trial.test = exp01_test_v01(cfg, nTrial, trial);
 
 
