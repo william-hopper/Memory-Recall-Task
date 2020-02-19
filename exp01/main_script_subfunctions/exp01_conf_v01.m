@@ -1,4 +1,4 @@
-function [conf] = exp01_conf_v01(cfg,type)
+function [conf] = exp01_conf_v01(cfg,type, nTrial)
 %
 % This function asks for participant's confidence about how many
 % associations they will remember
@@ -12,10 +12,11 @@ function [conf] = exp01_conf_v01(cfg,type)
 
 % change question text depending on which stage of trial (pre-first flip or
 % pre-testing)
+se_num = 1:8;
 
 switch type
     case 'flip'
-        question = cfg.ptb.instructions.conf_pre_flip;
+        question = [cfg.ptb.instructions.conf_pre_flip num2str(se_num(nTrial))];
     case 'SE'
         question = cfg.ptb.instructions.conf_SE;
     case 'test'
